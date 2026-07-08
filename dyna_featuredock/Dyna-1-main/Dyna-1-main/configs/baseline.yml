@@ -1,0 +1,28 @@
+model_name: 'baseline'
+train:
+  epochs: 500
+  batchsize: 16
+  accum_steps: 1
+  lr: 0.000001
+  dropout: 0.1
+  num_workers: 2
+model:
+  nheads: 6
+  nlayers: 10
+dir:
+  save_dir: '/path/to/save/dir'
+data:
+  pair_rep: None
+  sample_clusters: True
+  relaxdb: 
+    split: 'relaxdb'
+    crop_len: 367
+    type: 'rex'
+  cpmg: 
+    split: 'relaxdb-cpmg'
+    crop_len: 367
+    type: 'cpmg'
+wandb:
+  project: "New-Project"
+  team: 'my-project-team'
+  dir: '/wandb/log/dir'

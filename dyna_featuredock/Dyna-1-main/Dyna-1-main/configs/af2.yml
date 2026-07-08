@@ -1,0 +1,31 @@
+model_name: 'af2'
+train:
+  epochs: 500
+  batchsize: 4
+  accum_steps: 4
+  lr: 0.00001
+  dropout: 0.1
+  num_workers: 1
+model:
+  hidden_size: 128
+  res_count: 32
+  length: 400
+  nheads: 8
+  nlayers: 12
+dir:
+  save_dir: '/path/to/save/dir'
+data:
+  pair_rep: None
+  sample_clusters: True
+  relaxdb: 
+    split: 'relaxdb'
+    crop_len: 400
+    type: 'rex'
+  cpmg: 
+    split: 'relaxdb-cpmg'
+    crop_len: 400
+    type: 'cpmg'
+wandb:
+  project: "New-Project"
+  team: 'my-project-team'
+  dir: '/wandb/log/dir'
