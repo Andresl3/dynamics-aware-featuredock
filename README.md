@@ -4,7 +4,6 @@
 docking model can reason about pockets that *move*, not just the single frozen structure
 it was handed.
 
-📄 **Project page:** https://&lt;you&gt;.github.io/dynamics-aware-featuredock/
 
 ![Architecture](docs/assets/architecture.png)
 
