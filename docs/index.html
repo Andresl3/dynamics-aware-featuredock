@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynamics-aware FeatureDock</title>
+<style>
+  :root{
+    --ink:#1a2233; --muted:#5b6577; --line:#e4e8ef; --bg:#ffffff;
+    --accent:#c9463d; --accent2:#e08a2b; --panel:#f7f9fc;
+    --badge:#e08a2b;
+    --maxw:860px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.9em}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 20px}
+
+  /* header */
+  header{
+    background:linear-gradient(160deg,#12203a 0%,#243b63 100%);
+    color:#fff; padding:64px 0 52px;
+  }
+  header .wrap{max-width:var(--maxw)}
+  header h1{margin:0 0 8px; font-size:2.4rem; letter-spacing:-.02em; font-weight:700}
+  header .sub{font-size:1.15rem; color:#cdd8ec; margin:0 0 22px; max-width:640px}
+  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .pill{
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
+    color:#eef3fb; padding:5px 12px; border-radius:999px; font-size:.82rem;
+  }
+  .cta{display:inline-block; margin-top:22px; background:var(--accent2); color:#fff;
+       padding:10px 18px; border-radius:8px; font-weight:600; font-size:.95rem}
+  .cta:hover{background:#c9761f; text-decoration:none}
+
+  /* sections */
+  section{padding:44px 0; border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:none}
+  h2{font-size:1.5rem; margin:0 0 6px; letter-spacing:-.01em}
+  h2 .k{color:var(--accent); font-weight:700; margin-right:.4em}
+  .lead{color:var(--muted); margin:.2em 0 1.4em; font-size:1.02rem}
+  h3{font-size:1.08rem; margin:1.4em 0 .3em}
+
+  .pitch{
+    font-size:1.22rem; line-height:1.55; background:var(--panel);
+    border-left:4px solid var(--accent2); padding:18px 22px; border-radius:0 8px 8px 0;
+    color:var(--ink);
+  }
+
+  figure{margin:26px 0; text-align:center}
+  figure img{max-width:100%; height:auto; border:1px solid var(--line); border-radius:10px;
+    box-shadow:0 2px 14px rgba(20,30,60,.07)}
+  figcaption{color:var(--muted); font-size:.86rem; margin-top:10px; font-style:italic}
+
+  /* augmentation cards */
+  .aug{display:flex; gap:16px; padding:18px 0; border-top:1px dashed var(--line)}
+  .aug:first-of-type{border-top:none}
+  .num{flex:0 0 34px; height:34px; border-radius:50%; background:var(--badge); color:#fff;
+    font-weight:700; display:flex; align-items:center; justify-content:center; font-size:1.05rem}
+  .aug h3{margin:.1em 0 .25em; font-size:1.06rem}
+  .aug p{margin:.2em 0; color:#33405a}
+  .tag{display:inline-block; font-size:.72rem; font-weight:600; text-transform:uppercase;
+    letter-spacing:.03em; padding:2px 8px; border-radius:5px; margin-left:6px; vertical-align:middle}
+  .tag.retrain{background:#fde7e4; color:#b23a30}
+  .tag.nort{background:#e3f1e6; color:#2f7d43}
+
+  /* table */
+  table{width:100%; border-collapse:collapse; margin:12px 0; font-size:.94rem}
+  th,td{text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{color:var(--muted); font-weight:600; font-size:.8rem; text-transform:uppercase; letter-spacing:.03em}
+  td code{background:var(--panel); padding:1px 5px; border-radius:4px}
+
+  pre{background:#12203a; color:#e8eefb; padding:16px 18px; border-radius:10px; overflow-x:auto;
+    font-size:.86rem; line-height:1.5}
+  pre .c{color:#8fa3c7}
+
+  .note{background:#fff8ec; border:1px solid #f2dfb0; border-radius:8px; padding:12px 16px;
+    font-size:.92rem; color:#6a5326; margin:16px 0}
+  .note.hypo{background:#fdecec; border-color:#efb9b4; color:#8a2f27}
+  .hypo-tag{display:inline-block; background:var(--accent); color:#fff; font-size:.66rem;
+    font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:2px 8px;
+    border-radius:5px; vertical-align:middle; margin-right:6px}
+  h2 .hypo-tag{font-size:.6rem; vertical-align:middle}
+  figcaption .hypo-tag{font-style:normal}
+
+  .eq{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 16px;
+    font-family:ui-monospace,Menlo,monospace; text-align:center; margin:12px 0}
+
+  footer{padding:34px 0 48px; color:var(--muted); font-size:.86rem}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Dynamics-aware FeatureDock</h1>
+    <p class="sub">Injecting predicted and sampled protein motion into structure-based
+    docking &mdash; so a docking model can reason about pockets that <em>move</em>, not just
+    the single frozen structure it was handed.</p>
+    <div class="pills">
+      <span class="pill">Transformer docking</span>
+      <span class="pill">&micro;s&ndash;ms dynamics</span>
+      <span class="pill">Conformational ensembles</span>
+      <span class="pill">PyTorch</span>
+    </div>
+    <a class="cta" href="#quickstart">Get started &rarr;</a>
+  </div>
+</header>
+
+<section id="overview">
+  <div class="wrap">
+    <h2><span class="k">&sect;</span>Overview</h2>
+    <p class="lead">What the project is, in one sentence.</p>
+    <p class="pitch">Take <strong>FeatureDock</strong> &mdash; a transformer that predicts where a
+    ligand will sit in a protein pocket &mdash; and make it <strong>dynamics-aware</strong>: teach it
+    not just the static shape of the pocket but <em>how the pocket moves</em>, so it docks more
+    reliably in flexible pockets where a single crystal structure misleads it.</p>
+
+    <h3>The problem it attacks</h3>
+    <p>FeatureDock, as published, reads <strong>one static structure</strong> and predicts a
+    &ldquo;ligand-occupancy probability envelope&rdquo; over grid points in the pocket &mdash; a 3D cloud of
+    <em>&ldquo;a ligand atom probably goes here.&rdquo;</em> That works when the pocket is rigid. It struggles
+    when the pocket <strong>breathes</strong> on the &micro;s&ndash;ms timescale &mdash; exactly the motions a crystal
+    structure cannot show. The running example is <strong>CDK2&rsquo;s G-loop / Tyr15 region</strong>,
+    which rearranges between the kinase&rsquo;s active and inactive states. The hypothesis: feeding the
+    model information about which residues move lets it resolve those cases.</p>
+  </div>
+</section>
+
+<section id="architecture">
+  <div class="wrap">
+    <h2><span class="k">&sect;</span>Architecture</h2>
+    <p class="lead">Transformer docking + scoring, augmented with predicted &amp; sampled motion at three
+    stages of the pipeline.</p>
+    <figure>
+      <img src="assets/architecture.png" alt="Dynamics-aware FeatureDock block diagram">
+      <figcaption>Fig 1. Pipeline from apo structure &rarr; featurize &rarr; transformer &rarr; envelope &rarr;
+      score. Augmentation points are badged &#9312; &#9313; &#9314;.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="augmentations">
+  <div class="wrap">
+    <h2><span class="k">&sect;</span>The three augmentations</h2>
+    <p class="lead">Each injects protein motion at a different stage &mdash; and they escalate in cost.</p>
+
+    <div class="aug">
+      <div class="num">1</div>
+      <div>
+        <h3>Dyna-1 dynamics channel <span class="tag retrain">requires retrain</span></h3>
+        <p>FeatureDock describes each grid point with a <code>6&nbsp;shells &times; 80</code>
+        physicochemical FEATURE tensor. This appends <strong>one more channel</strong> &mdash; Dyna-1&rsquo;s
+        per-residue &micro;s&ndash;ms motion probability &mdash; making it <code>6 &times; 81</code>, then retrains
+        the transformer. The central experiment: <em>does telling the model which residues move help it
+        dock?</em></p>
+      </div>
+    </div>
+
+    <div class="aug">
+      <div class="num">2</div>
+      <div>
+        <h3>Ensemble-conditioned envelope averaging <span class="tag nort">no head retrain</span></h3>
+        <p>Instead of one structure, generate a <strong>Protpardelle-1c</strong> partial-diffusion
+        ensemble of the pocket, run FeatureDock on <em>each</em> conformer, and average the resulting
+        envelopes <strong>in output space</strong> (not by averaging input features). Tests robustness to
+        small backbone movements &mdash; the idea adapted from ensemble conditioning in Caliby /
+        Likelihood-Fitness Bridging.</p>
+      </div>
+    </div>
+
+    <div class="aug">
+      <div class="num">3</div>
+      <div>
+        <h3>Population-weighted multi-state scoring <span class="tag nort">no retrain</span></h3>
+        <p>Score each conformational state separately, then combine them the way physics prescribes &mdash;
+        a population-weighted sum of association constants:</p>
+        <div class="eq">K<sub>app</sub> = &Sigma;<sub>i</sub> p<sub>i</sub>&middot;K<sub>i</sub> ,
+          &nbsp;&nbsp; K<sub>i</sub> &prop; exp(&minus;&Delta;G<sub>i</sub> / RT)</div>
+        <p>with p<sub>i</sub> the state populations (from the ensemble, or a Markov State Model). For a
+        two-state open&#8646;closed pocket this is exactly
+        K<sub>app</sub> = p<sub>open</sub>&middot;K<sub>open</sub> + p<sub>closed</sub>&middot;K<sub>closed</sub>.
+        Sits entirely downstream of a trained model; needs a score&rarr;pseudo-&Delta;G calibration.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <h2><span class="k">&sect;</span>Expected results <span class="hypo-tag">Hypothetical</span></h2>
+    <div class="note hypo"><strong>&#9888; These plots are hypothetical results.</strong> Every figure in
+    this section is a hypothesized / expected outcome sketched during project design &mdash; it shows the
+    <em>shape</em> of result the experiments are built to test, <strong>not data from a trained model</strong>.
+    No model has been trained or evaluated yet.</div>
+    <figure>
+      <img src="assets/results.png" alt="Hypothetical end-of-training metrics, four panels">
+      <figcaption><span class="hypo-tag">Hypothetical</span> Fig 2. A: training curves. B: pose-success ROC.
+      C: CDK2 inactive-vs-active envelope difference sharpening at the mobile Tyr15/G-loop when dynamics is
+      included. D: dynamics helps most in flexible pockets. <em>Illustrative &mdash; not measured.</em></figcaption>
+    </figure>
+    <figure>
+      <img src="assets/pose_rmsd.png" alt="Hypothetical ligand pose RMSD boxplots">
+      <figcaption><span class="hypo-tag">Hypothetical</span> Fig 3. Predicted ligand-pose RMSD to native.
+      The hypothesis: dynamics augmentations pull the poorly-predicted flexible-pocket cases below the
+      2&nbsp;&Aring; success line, where static FeatureDock fails. <em>Illustrative &mdash; not measured.</em></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="wrap">
+    <h2><span class="k">&sect;</span>Built on three tools</h2>
+    <p class="lead">Each open-source repo maps onto a specific role in the pipeline.</p>
+    <table>
+      <thead><tr><th>Tool</th><th>Role</th><th>Augmentation</th></tr></thead>
+      <tbody>
+        <tr><td><a href="https://github.com/xuhuihuang/featuredock">FeatureDock</a></td>
+            <td>The base model being rewritten &amp; retrained</td><td>all</td></tr>
+        <tr><td><a href="https://github.com/WaymentSteeleLab/Dyna-1">Dyna-1</a></td>
+            <td>Produces the per-residue &micro;s&ndash;ms motion channel</td><td>&#9312;</td></tr>
+        <tr><td><a href="https://github.com/ProteinDesignLab/protpardelle-1c">Protpardelle-1c</a></td>
+            <td>Generates the conformer ensembles</td><td>&#9313; &#9314;</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2">
+      <div>
+        <h3>Data</h3>
+        <p>Base training set: <strong>PDBBind v2020 refined</strong> (~4,515 preprocessed
+        cocrystals), reused with the original 90% MMseqs2 cluster split so homologs never straddle
+        train/val. Grid points (millions) are the trainable records; the structure is the sampling unit
+        for class balancing.</p>
+      </div>
+      <div>
+        <h3>Evaluation</h3>
+        <p>Primary metric: ligand-pose RMSD to native (2&nbsp;&Aring; success threshold). Secondary:
+        AUC / KL for strong-vs-weak discrimination, using ChEMBL potencies
+        (<code>CDK2 = CHEMBL301</code>, <code>ACE = CHEMBL1808</code>), stratified by pocket flexibility.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="quickstart">
+  <div class="wrap">
+    <h2><span class="k">&sect;</span>Quick start</h2>
+    <p class="lead">The environment ships all three tools in one place.</p>
+    <pre><span class="c"># clone this repo (contains featuredock / Dyna-1 / protpardelle-1c)</span>
+git clone https://github.com/&lt;you&gt;/dynamics-aware-featuredock.git
+cd dynamics-aware-featuredock
+
+<span class="c"># build the env (Python 3.11, modern PyTorch; see setup script)</span>
+bash setup_hackathon_mamba.sh
+micromamba activate Hackathon</pre>
+    <div class="note">The three upstream repos have incompatible declared pins (FeatureDock&rarr;py3.8,
+    protpardelle-1c&rarr;py&ge;3.10). This project runs them together on a single modern stack; FeatureDock
+    runs off its original py3.8/torch2.3 pins, and <code>torchtext</code> is dropped (unused, breaks on
+    modern torch).</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Dynamics-aware FeatureDock</strong> &mdash; Andres Lira. Built on FeatureDock
+    (Xue, Liu, Cao &amp; Huang, npj Drug Discovery 2025), Dyna-1 (Wayment-Steele lab),
+    and Protpardelle-1c (Protein Design Lab).</p>
+    <p>References: FeatureDock <code>doi:10.1038/s44386-025-00005-6</code> &middot;
+    Dyna-1 <code>biorxiv 2025.03.19.642801</code> &middot;
+    Protpardelle-1c <code>biorxiv 2025.08.18.670959</code> &middot;
+    Caliby <code>biorxiv 2025.09.30.679633</code>.</p>
+  </div>
+</footer>
+
+</body>
+</html>

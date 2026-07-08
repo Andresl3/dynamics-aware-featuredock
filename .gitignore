@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# The three tool repos are cloned by setup_hackathon_mamba.sh — do not commit them
+featuredock/
+Dyna-1/
+protpardelle-1c/
+
+# Model weights / large data (download separately)
+*.pt
+*.ckpt
+*.pth
+model/weights/
