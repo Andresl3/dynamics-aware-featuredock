@@ -20,3 +20,17 @@ protpardelle-1c/
 *.ckpt
 *.pth
 model/weights/
+
+# Bulk datasets — NEVER commit PDBBind (thousands of files, gigabytes).
+# Get it via registration / your own Drive; the Colab notebook expects it there.
+dyna_featuredock/
+P-L/
+*.mol2
+*.sdf
+*_protein.pdb
+*_pocket.pdb
+*_ligand.pdb
+*.property.pvar
+*.voxels.pkl
+*.landmarks.pkl
+*.labels.pkl
