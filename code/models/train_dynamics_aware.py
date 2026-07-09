@@ -70,6 +70,11 @@ def build_parser():
     p.add_argument('--earlystop', action='store_true')
     p.add_argument('--seed', type=int, default=0)
     p.add_argument('--use_gpu', action='store_true')
+    p.add_argument('--warm-start', default=None,
+                   help='pretrained checkpoint to warm-start from (e.g. one of the '
+                        'repo\'s results/vit_20/HeavyAtomsite_transformer_20_seed*.torch). '
+                        'Layers whose shape matches are loaded; shape-mismatched layers '
+                        '(e.g. norm_layer 80->81 for the Dyna-1 channel) are reinitialized.')
     return p
 
 
@@ -93,6 +98,35 @@ def build_model(args, device):
         from models.customise_models import get_fnn_model
         model = get_fnn_model(in_dim, [], n_class, dropout=0.5)
     return model.float().to(device)
+
+
+def warm_start(model, ckpt_path, device):
+    """Load a pretrained checkpoint into `model`, keeping only shape-matching
+    tensors; shape-mismatched layers keep their fresh init.
+
+    Going 6x80 -> 6x81 changes exactly the input-facing layer that carries a
+    per-property dimension: in the transformer that is
+    `norm_layer = nn.BatchNorm2d(feature_per_shell)` (80 -> 81), NOT `word2dense`
+    (which projects the num_shells axis and is unchanged). We therefore load
+    everything that fits and reinitialize only the mismatched tensor(s), so a
+    warm-start from the baseline-80 checkpoints is valid for the 81-channel model.
+    """
+    raw = torch.load(ckpt_path, map_location=device)
+    src = raw.get('model_state_dict', raw)  # accept raw state_dict or wrapped ckpt
+    tgt = model.state_dict()
+    loaded, skipped = [], []
+    for k, v in src.items():
+        if k in tgt and tgt[k].shape == v.shape:
+            tgt[k] = v
+            loaded.append(k)
+        else:
+            skipped.append(k)
+    model.load_state_dict(tgt)
+    print(f"[warm-start] from {os.path.basename(ckpt_path)}: "
+          f"loaded {len(loaded)} tensors, reinitialized {len(skipped)}")
+    if skipped:
+        print(f"[warm-start] reinitialized (shape change / not in checkpoint): {skipped}")
+    return model
 
 
 def load_pids(path, pool):
@@ -146,6 +180,8 @@ def main():
     assert val_pids, "no CDK2 validation structures found -- did you featurize them?"
 
     model = build_model(args, device)
+    if args.warm_start:
+        model = warm_start(model, args.warm_start, device)
     print("Tunable params:", count_parameters(model))
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
