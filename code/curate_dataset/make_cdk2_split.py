@@ -66,14 +66,48 @@ def clan_holdout(cdk2_ids, clan_df_path):
     return holdout, n_clans
 
 
+def paper_kfold_holdout(ignore_ids, clan_df_path, seed=42):
+    """Reproduce the repo's make_kfold.py --ignorefile IsRemoved logic EXACTLY.
+
+    A clan is flagged IsRemoved if its PDBIDList shares ANY structure with the
+    ignore list (the 438-member CDK2 90%-identity set). Every structure in a
+    removed clan becomes the held-out (CDK2) validation pool; the remaining
+    clans are the training pool. This matches
+        make_kfold.py --clanfile ClanGraph_90_df.pkl \
+                      --ignorefile cdk2_1h00_90identity.txt --seed 42
+    so the CDK2 leave-out is identical to the FeatureDock paper's protocol.
+
+    Note: the IsRemoved holdout is fully deterministic (set intersection); no RNG
+    is involved. The `seed` in make_kfold.py only affects the k-fold shuffle of
+    the *remaining* clans, which is not part of the train/val holdout we produce.
+    The parameter is kept for signature parity but does not change this result.
+    """
+    df = pickle.load(open(clan_df_path, "rb"))
+    ignore = set(ignore_ids)
+    removed, kept = set(), set()
+    n_removed_clans = 0
+    for _, row in df.iterrows():
+        members = {str(x).lower() for x in row["PDBIDList"]}
+        if members & ignore:        # IsRemoved == True
+            removed |= members
+            n_removed_clans += 1
+        else:
+            kept |= members
+    return removed, kept, n_removed_clans
+
+
 def main():
     ap = argparse.ArgumentParser(description="CDK2-as-validation split for FeatureDock.")
     ap.add_argument("--datafolder", required=True,
                     help="folder of <pid>.property.pvar files (the trainable pool)")
     ap.add_argument("--datadir", default=os.path.join(os.path.dirname(__file__), "..", "..", "data"),
                     help="FeatureDock data/ dir with the CDK2 lists + clan graph")
-    ap.add_argument("--cdk2-scope", choices=["crystals", "homologs", "clan"],
-                    default="homologs", help="how to define the CDK2 hold-out (default: homologs)")
+    ap.add_argument("--cdk2-scope", choices=["crystals", "homologs", "clan", "paper"],
+                    default="paper",
+                    help="how to define the CDK2 hold-out. 'paper' (default) reproduces the "
+                         "repo's make_kfold.py --ignorefile IsRemoved protocol exactly.")
+    ap.add_argument("--seed", type=int, default=42,
+                    help="random seed, matches make_kfold.py default (42) for reproducibility")
     ap.add_argument("--out-train", default="train_pids.txt")
     ap.add_argument("--out-val", default="val_pids.txt")
     args = ap.parse_args()
@@ -90,12 +124,19 @@ def main():
         val_target = set(crystals)
     elif args.cdk2_scope == "homologs":
         val_target = set(crystals) | set(homologs)
-    else:  # clan
+    elif args.cdk2_scope == "clan":
         holdout, n_clans = clan_holdout(cdk2_union,
                                         os.path.join(args.datadir, "ClanGraph_90_df.pkl"))
         val_target = holdout
         print(f"[split] clan scope: {n_clans} clan(s) contain a CDK2 id "
               f"-> {len(holdout)} structures held out")
+    else:  # paper -- exact make_kfold.py --ignorefile IsRemoved reproduction
+        removed, kept, n_removed = paper_kfold_holdout(
+            homologs, os.path.join(args.datadir, "ClanGraph_90_df.pkl"), seed=args.seed)
+        val_target = removed
+        print(f"[split] paper scope (seed={args.seed}): ignore-list={len(homologs)} CDK2 homologs "
+              f"-> {n_removed} clan(s) IsRemoved -> {len(removed)} structures held out, "
+              f"{len(kept)} kept for training")
 
     # Validation = CDK2 target intersected with what we actually have featurized.
     val = sorted(val_target & set(pool))
