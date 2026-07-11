@@ -2,7 +2,7 @@
 #SBATCH --job-name=dynafeat_prep
 #SBATCH --output=logs/prep_%A_%a.out
 #SBATCH --error=logs/prep_%A_%a.err
-#SBATCH --array=1-10            # 10 shards; each task does 1/10 of the dataset
+#SBATCH --array=1-4             # 4 shards; each task does 1/4 of the dataset (~1325 structures)
 #SBATCH --gres=gpu:1           # Dyna-1 (ESM-2) inference uses the GPU
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
@@ -23,7 +23,7 @@ source activate "${ENV_NAME:-dynafeat}" 2>/dev/null || conda activate "${ENV_NAM
 # --- paths (EDIT) ---
 ROOT="$HOME/dynamics-aware-featuredock"
 PDBBIND_DIR="$DATA/PDBbind_v2020/P-L"     # your extracted PDBBind (flat or P-L/year/pid)
-OUT_DIR="$SCRATCH/dyna_featuredock_out"   # big; put on scratch/fast storage
+OUT_DIR="${SCRATCH:-/scratch/mani.na}/dyna_featuredock_out"   # big; put on scratch/fast storage
 
 N=$SLURM_ARRAY_TASK_COUNT
 K=$SLURM_ARRAY_TASK_ID

@@ -67,6 +67,9 @@ def build_parser():
     p.add_argument('--n_resamples', type=int, default=1000, help='resampled points per structure')
     p.add_argument('--save_every', type=int, default=25)
     p.add_argument('--patience', type=int, default=30)
+    p.add_argument('--num_workers', type=int, default=4,
+                   help='DataLoader workers; 0=main process. >0 keeps the GPU fed '
+                        'when reading .property.pvar from slow storage.')
     p.add_argument('--earlystop', action='store_true')
     p.add_argument('--seed', type=int, default=0)
     p.add_argument('--use_gpu', action='store_true')
@@ -190,39 +193,76 @@ def main():
                                  resample=True, n_resamples=args.n_resamples)
     val_ds = ClassifierDataset(args.datafolder, val_pids, suffix=args.task,
                                resample=True, n_resamples=args.n_resamples)
-    train_ld = DataLoader(train_ds, batch_size=args.n_structs, shuffle=True)
-    val_ld = DataLoader(val_ds, batch_size=args.n_structs, shuffle=False)
+    train_ld = DataLoader(train_ds, batch_size=args.n_structs, shuffle=True,
+                          num_workers=args.num_workers, pin_memory=True,
+                          persistent_workers=(args.num_workers > 0))
+    val_ld = DataLoader(val_ds, batch_size=args.n_structs, shuffle=False,
+                        num_workers=args.num_workers, pin_memory=True,
+                        persistent_workers=(args.num_workers > 0))
 
     stopper = EarlyStopping(patience=args.patience, verbose=False) if args.earlystop else None
     history = []
+    import time as _time
+    def _safe_print(msg):
+        # A transient log-write failure (e.g. NFS/Lustre ESTALE on scratch) must
+        # not kill a multi-hour run. Retry once, then give up on the message.
+        for _ in range(2):
+            try:
+                print(msg, flush=True); return
+            except OSError:
+                _time.sleep(1)
+    _safe_print(f"Starting training: {args.steps} steps (each step = one full epoch "
+                f"over {len(train_pids)} train structures)")
     for step in range(1, args.steps + 1):
+        _t0 = _time.time()
         tr = run_epoch(model, train_ld, loss_fn, optimizer, device, train=True)
         va = run_epoch(model, val_ld, loss_fn, optimizer, device, train=False)
+        _safe_print(f"[{step:4d}] epoch_time={_time.time()-_t0:.1f}s")
         row = {'step': step,
                'train_loss': tr[0], 'train_acc': tr[1], 'train_mcc': tr[2],
                'val_loss': va[0], 'val_acc': va[1], 'val_mcc': va[2],
                'val_precision': va[3], 'val_recall': va[4], 'val_f1': va[5]}
         history.append(row)
         if step % 5 == 0 or step == 1:
-            print(f"[{step:4d}] train_loss={tr[0]:.4f} acc={tr[1]:.3f} | "
-                  f"val_loss={va[0]:.4f} acc={va[1]:.3f} mcc={va[2]:.3f} f1={va[5]:.3f}")
+            _safe_print(f"[{step:4d}] train_loss={tr[0]:.4f} acc={tr[1]:.3f} | "
+                        f"val_loss={va[0]:.4f} acc={va[1]:.3f} mcc={va[2]:.3f} f1={va[5]:.3f}")
         if step % args.save_every == 0:
-            torch.save({'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        'step': step, 'args': vars(args)},
-                       os.path.join(args.outfolder, f"{modelname}_step{step}.torch"))
+            try:
+                torch.save({'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict(),
+                            'step': step, 'args': vars(args)},
+                           os.path.join(args.outfolder, f"{modelname}_step{step}.torch"))
+            except OSError as e:
+                _safe_print(f"[{step:4d}] WARN: checkpoint save failed ({e}); continuing")
         if stopper is not None:
             stopper(va[0], model)
             if stopper.early_stop:
-                print(f"Early stop at step {step}"); break
+                _safe_print(f"Early stop at step {step}"); break
 
-    torch.save({'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'args': vars(args)},
-               os.path.join(args.outfolder, f"{modelname}_final_params.torch"))
-    with open(os.path.join(args.outfolder, f"{modelname}_history.json"), 'w') as f:
-        json.dump(history, f, indent=2)
-    print(f"Saved final params + history to {args.outfolder}")
+    # Final save + history. Retry on transient FS errors (ESTALE) so a scratch
+    # hiccup at the very end can't discard a completed run. Try home as fallback.
+    def _save_final(outdir):
+        torch.save({'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                    'args': vars(args)},
+                   os.path.join(outdir, f"{modelname}_final_params.torch"))
+        with open(os.path.join(outdir, f"{modelname}_history.json"), 'w') as f:
+            json.dump(history, f, indent=2)
+    saved_to = None
+    for attempt in range(3):
+        try:
+            _save_final(args.outfolder); saved_to = args.outfolder; break
+        except OSError as e:
+            _safe_print(f"WARN: final save failed (attempt {attempt+1}: {e}); retrying")
+            _time.sleep(3)
+    if saved_to is None:
+        fallback = os.path.join(os.path.expanduser("~"), f"dynafeat_rescue_{modelname}")
+        try:
+            os.makedirs(fallback, exist_ok=True); _save_final(fallback); saved_to = fallback
+            _safe_print(f"WARN: scratch unwritable; final save rescued to {fallback}")
+        except OSError as e:
+            _safe_print(f"ERROR: final save failed everywhere ({e})")
+    _safe_print(f"Saved final params + history to {saved_to}")
 
 
 if __name__ == "__main__":
