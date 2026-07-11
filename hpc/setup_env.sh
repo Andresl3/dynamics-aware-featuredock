@@ -15,11 +15,38 @@ conda create -y -n "$ENV_NAME" python=3.11
 # shellcheck disable=SC1091
 source activate "$ENV_NAME" 2>/dev/null || conda activate "$ENV_NAME"
 
-# ---- 2. GPU PyTorch. PICK THE CUDA BUILD MATCHING YOUR CLUSTER ----
-#   check with: nvidia-smi   (top-right CUDA version)
-# CUDA 12.1 example:
+# ---- 2. GPU PyTorch. PICK THE CUDA BUILD MATCHING YOUR GPU ----
+# You MUST match the torch CUDA build to the GPU on the node you will run on.
+# First find your GPU's compute capability:
+#     nvidia-smi
+#     python -c "import torch; print(torch.cuda.get_device_capability(0))"  # after a torch is installed
+#
+# Then pick the wheel (uncomment ONE line below):
+#
+#   Volta/Turing   (V100 sm_70, T4 sm_75):              cu118 or cu121
+#   Ampere         (A100 sm_80, RTX 30xx sm_86):        cu121 or cu124
+#   Hopper         (H100 sm_90):                        cu124 (or cu121)
+#   Blackwell      (RTX PRO 6000 / RTX 50-series):      cu128
+#       NOTE: Blackwell needs a cu128 (or newer) wheel; older cu121/cu124 wheels
+#       lack the Blackwell kernels and fail with "no kernel image is available
+#       for execution on the device". The exact sm_1xx capability for a given
+#       Blackwell card varies by SKU (reports differ, e.g. sm_120 vs sm_122) --
+#       don't hard-code a number; just install cu128 and let the VERIFY step below
+#       print what actually loaded.
+#
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-# (CPU-only fallback: pip install torch torchvision torchaudio)
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128   # Blackwell
+# CPU-only fallback: pip install torch torchvision torchaudio
+#
+# VERIFY: is_available() is NOT enough -- launch a real kernel. If this errors
+# with "no kernel image", your GPU's capability isn't in the installed build:
+python -c "import torch; print('torch', torch.__version__, '| built for CUDA', torch.version.cuda); \
+print('arch list:', torch.cuda.get_arch_list()); \
+print('this GPU:', torch.cuda.get_device_name(0), torch.cuda.get_device_capability(0)); \
+x=torch.randn(1024,1024,device='cuda'); print('gpu matmul ok:', float((x@x).sum()))" \
+  || echo "[setup] WARN: GPU check failed -- pick a torch CUDA build that supports your card's capability"
 
 # ---- 3. scientific + pipeline deps (numpy pinned <2 for Dyna-1/biotite) ----
 pip install "numpy<2" scipy pandas scikit-learn biopython tqdm

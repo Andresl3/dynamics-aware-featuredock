@@ -34,3 +34,4 @@ P-L/
 *.voxels.pkl
 *.landmarks.pkl
 *.labels.pkl
+dyna1_csv.tar.gz
