@@ -17,7 +17,7 @@ dynamics-aware models on PDBBind v2020 with **CDK2 held out as validation**.
 
 The Colab notebook is in `../notebooks/dynamics_aware_featuredock_colab.ipynb`.
 
-## How to run on Colab (your friend's account)
+## How to run on Colab 
 
 1. **Clone or pull this repo** anywhere.
 2. On Google Drive, create a project folder and inside it a `code/` subfolder;
