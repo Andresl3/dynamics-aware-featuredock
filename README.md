@@ -19,13 +19,13 @@ We append a per-residue µs–ms dynamics channel — predicted by [Dyna-1](http
 ## Background: why dynamics, and why not existing dynamics-aware models
 
 Existing dynamics-aware binding models such as Boltz-2 are trained on NMR ensembles and short MD trajectories. Neither is ground-truth dynamics:
-("docs/assets/abl_src_02_not_ground_truth.png")
+<img src="docs/assets/abl_src_02_not_ground_truth.png" width="640"/>
 - **NMR ensembles** are structural snapshots consistent with experimental restraints, not validated exchange kinetics. As one NMR structural biologist put it: *"(essentially all) NMR ensembles in the PDB are NOT thermodynamic ensembles... they are uncertainty ensembles, and using them to benchmark machine learning models of dynamics is not a good idea."*
 - **Short MD** is undersampled on the µs–ms timescale that gates most biologically interesting conformational change.
-("docs/assets/abl_src_01_dynamics_challenge.png")
+<img src="docs/assets/abl_src_01_dynamics_challenge.png" width="640"/>
 The consequence is visible in a concrete, clinically important case — the **Abl/Src kinase paradox**. Gleevec (imatinib) binds Abl kinase (on-target, the CML drug target) with a K<sub>D</sub> of ~80 nM, but binds Src kinase (off-target) ~3000× more weakly. The holo crystal structures of Abl (1OPJ) and Src (2OIQ) bound to Gleevec are nearly identical — conformational selection at Abl, induced fit at Src, same final pose. A model scoring static structure has almost nothing to work with. Boltz-2 gets the direction of selectivity backwards (predicted IC50 9.5 for Abl vs. 8.2 for Src). The selectivity isn't encoded in the bound structure — it's encoded in how the *apo* protein moves before the drug ever binds.
 
-**Dyna-1**, by contrast, is trained on RelaxDB (real ¹⁵N-CPMG relaxation-dispersion ground-truth exchange data) and BMRB HSQC peak lists — including the signal hiding in *exchange-broadened residues that are missing from published assignments* — giving it the closest available approximation to true per-residue µs–ms exchange.("docs/assets/abl_src_03_nmr_crash_course.png")
+**Dyna-1**, by contrast, is trained on RelaxDB (real ¹⁵N-CPMG relaxation-dispersion ground-truth exchange data) and BMRB HSQC peak lists — including the signal hiding in *exchange-broadened residues that are missing from published assignments* — giving it the closest available approximation to true per-residue µs–ms exchange.<img src="docs/assets/abl_src_03_nmr_crash_course.png" width="640"/>
 
 ### Hypothesis
 
