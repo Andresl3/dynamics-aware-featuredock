@@ -43,6 +43,35 @@ The consequence is visible in a concrete, clinically important case — the **Ab
 
 The only architectural change is the added channel: everything downstream of the FEATURE tensor (the transformer, the scoring head, the virtual-screening loop) is untouched. This keeps the ablation clean — any performance delta has to come from the dynamics channel itself, not from added model capacity elsewhere.
 
+## Defining Your Data
+
+My base training set is the **PDBBind v2020 refined set** (~5,316 raw protein-ligand
+cocrystals, ~4,515 after preprocessing), reused with the original 90% MMseqs2
+sequence-similarity cluster split so that homologous structures never straddle
+train and validation. The trainable records are grid points (millions) discretized
+from each pocket; the structure/cluster is the sampling unit for class balancing.
+
+To this base set, I add:
+- **Dyna-1** per-residue µs–ms motion predictions, computed over every structure
+  and mapped onto the grid-point shells
+- **ChEMBL** bioassay libraries (CDK2 = `CHEMBL301`, ACE = `CHEMBL1808`) with IC₅₀
+  values, for potency validation
+- **Protpardelle-1c** partial-diffusion ensembles of each query pocket (used for
+  augmentation 2)
+
+| | |
+|---|---|
+| **Access** | Free with registration (non-redistributable); ChEMBL/Protpardelle-1c outputs open |
+| **Format** | Derived tensors (`.pt`) from PDB/mmCIF structures; CSV for bioassay potencies |
+| **# records** | ~4,515 structures → millions of labeled grid points |
+| **# fields / variables** | Per grid point: 6 shells × 80 FEATURE properties (6×80), plus 1 Dyna-1 motion channel → 6×81 |
+
+**Processing / munging:**
+1. Run Dyna-1 per structure
+2. Aggregate per-residue motion into the shell featurization, following the same
+   aggregation scheme used for existing residue-level properties
+3. Preserve the original class balancing (under-sample negatives, over-sample
+   positives)
 ---
 
 ## Results
