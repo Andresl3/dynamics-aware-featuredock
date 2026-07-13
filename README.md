@@ -156,6 +156,7 @@ ChEMBL target existence). No values are recalled.
 
 ## Result — the two searches land in different regions
 <img src="docs/assets/expert_vs_solo_search.png" width="450"/>
+
 | metric (mean per candidate) | unconditioned | expert-conditioned | fold |
 |---|--:|--:|--:|
 | dynamics papers (conf.+MD+NMR) | 242 | 4 | **61×** |
