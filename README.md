@@ -129,7 +129,7 @@ Every number below was pulled live this session (PubMed `total_count` per query;
 ChEMBL target existence). No values are recalled.
 
 ## Result — the two searches land in different regions
-<img src="docs/assets/expert_vs_solo_search.png" alt="Three-panel story: the hypothesis, warm-start gain per system, and scrambled-channel ablation showing real Dyna-1 wins on 5 of 6 systems" width="450"/>
+<img src="docs/assets/expert_vs_solo_search.png" width="450"/>
 | metric (mean per candidate) | unconditioned | expert-conditioned | fold |
 |---|--:|--:|--:|
 | dynamics papers (conf.+MD+NMR) | 242 | 4 | **61×** |
