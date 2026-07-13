@@ -69,7 +69,7 @@ DiffDock-L reaches lower median RMSD on rigid pockets, but fails catastrophicall
 
 | PTP1B (1NL9) | HSP90α (4B7P) |
 |---|---|
-| ![PTP1B pose overlay](docs/assets/ptp1b_1nl9_poses.png) | ![HSP90α pose overlay](docs/assets/hsp90a_4b7p_poses.png) |
+| ![PTP1B pose overlay](docs/assets/pose_overlay_ptp1b.png) | ![HSP90α pose overlay](docs/assets/pose_overlay_hsp90a.png) |
 
 Baseline, +Dyna-1, and native pose overlaid on the two systems with the largest warm-start gains — both gated by well-characterized loop motion (PTP1B WPD loop, HSP90 ATP lid).
 
