@@ -289,6 +289,8 @@ contrast is your cleanest one-line proof that the feature is timescale-specific.
 
 ## Quick start
 
+### Local / single machine (micromamba)
+
 ```bash
 git clone https://github.com/natesana/dynamics-aware-featuredock.git
 cd dynamics-aware-featuredock
@@ -296,41 +298,104 @@ bash setup_hackathon_mamba.sh      # Python 3.11 + modern PyTorch, all three too
 micromamba activate Hackathon
 ```
 
+`setup_hackathon_mamba.sh` creates a `Hackathon` micromamba env (Python 3.11 + current PyTorch) and clones the three upstream tools — **featuredock**, **Dyna-1**, and **protpardelle-1c** — into `$HOME/Hackathon` (edit `CODE_DIR` at the top of the script to change that location). It finishes with an import sanity check listing any packages that failed to load.
+
 The three upstream repos have incompatible declared pins (FeatureDock → py3.8). This project runs them together on a single modern stack; FeatureDock's original py3.8/torch2.3 pins are dropped in favor of the shared environment, and `torchtext` is dropped entirely (unused, breaks on modern torch).
 
-## Publishing the project page
+A runnable end-to-end walkthrough of the pipeline is in [`notebooks/dynamics_aware_featuredock_colab.ipynb`](notebooks/dynamics_aware_featuredock_colab.ipynb).
 
-The site lives in `docs/`. To serve it with GitHub Pages:
+### HPC / SLURM cluster (full pipeline)
 
-1. Push this repo to GitHub.
-2. Settings → Pages → Build and deployment → Source: Deploy from a branch.
-3. Branch: `main`, folder: `/docs`. Save.
-4. The page appears at `https://<you>.github.io/dynamics-aware-featuredock/` within a minute.
+The GPU-ready, headless version of the whole pipeline lives in `hpc/`. See [`hpc/README_HPC.md`](hpc/README_HPC.md) for the runbook and [`docs/REPRODUCE.md`](docs/REPRODUCE.md) for the full linear reproduction guide. In brief:
 
-To preview locally: `python -m http.server -d docs` then open `http://localhost:8000`.
+```bash
+# 1. build env + clone tools + unpack FEATURE + download Dyna-1 weights (login node, once)
+#    open setup_env.sh first and set the CUDA wheel index to match your GPU nodes
+bash hpc/setup_env.sh
+
+# 2. get PDBBind v2020 refined set (NOT in repo — register at pdbbind.org.cn) and point at it
+export PDBBIND_DIR=/your/path/to/PDBbind_v2020_refined/refined-set
+
+# 3. Dyna-1 dynamics channel: precompute one p_exchange CSV per structure (GPU, hours)
+sbatch hpc/run_dyna1_precompute.slurm
+
+# 4. preprocess -> baseline 6x80 (pvar_80/) and Dyna-1-augmented 6x81 (pvar_81/) tensors (GPU)
+sbatch hpc/run_preprocess.slurm
+
+# 5. split (CDK2 held out) + train both arms — from scratch, or warm-start from FeatureDock
+sbatch hpc/run_train.slurm
+sbatch hpc/run_train_warmstart.slurm
+
+# 6. evaluate: binding-site occupancy + pose RMSD (top-4 is the paper-comparable metric)
+sbatch hpc/run_evaluate.slurm
+sbatch hpc/run_rmsd_full18.slurm
+```
+
+Before submitting, edit `ROOT` / `OUT_DIR` / `PDBBIND_DIR` and the `#SBATCH` partition/account lines at the top of each script for your site, and set each script's `ENV_NAME` to the env you built. Put `$OUT_DIR` on fast scratch storage — preprocessing writes thousands of small files. The dynamics-target screens (p38α / HSP90α / CA-II) read the ID lists shipped in `hpc/target_pids/`.
 
 ## Repo contents
 
 ```
 dynamics-aware-featuredock/
 ├── README.md
-├── docs/
-│   ├── assets/
-│   │   ├── architecture_dyna1_augmented.svg   # new: Dyna-1 channel added to FeatureDock
-│   │   ├── architecture_baseline.png          # original FeatureDock 5-panel pipeline
-│   │   ├── fig1_threeway_rmsd.png             # baseline vs real Dyna-1 vs scrambled
-│   │   ├── fig2_baseline_vs_dyna1.png         # pose success rate, 6 systems
-│   │   ├── fig3_diffdock_comparison.png       # vs FeatureDock_Dyna1 predicted drug binding
-│   │   ├── ptp1b_1nl9_poses.png
-│   │   ├── hsp90a_4b7p_poses.png
-│   │   ├── dyna1_story_3panel.png             # hypothesis / warm-start gain / ablation
-│   │   ├── target_impact_landscape.webp
-│   │   └── target_impact_landscape.csv
-│   └── dyna1_six_point_response.md        # full literature-grounded analysis + next experiments
+├── README_dynamics_aware.md              # short project-specific overview
+├── setup_hackathon_mamba.sh              # local micromamba env + clone the 3 tools
+├── code/
+│   ├── curate_dataset/
+│   │   ├── create_voxels_and_landmarks.py
+│   │   ├── featurize_dyna1_channel.py    # appends the Dyna-1 channel: 6x80 -> 6x81
+│   │   └── make_cdk2_split.py
+│   ├── dyna1/
+│   │   ├── precompute_dyna1.py           # Dyna-1 inference -> per-residue p_exchange CSVs
+│   │   └── dyna1_csv.tar.gz              # precomputed CSVs (~16 MB)
+│   └── models/
+│       ├── train_dynamics_aware.py       # trains baseline (80) and +Dyna-1 (81) arms
+│       ├── evaluate_cdk2.py              # occupancy / binding-site eval
+│       ├── evaluate_cdk2_rmsd.py         # pose RMSD (top1 / top4 / oracle)
+│       └── parse_config.py
+├── hpc/                                   # SLURM runbook for the full pipeline
+│   ├── README_HPC.md
+│   ├── setup_env.sh
+│   ├── preprocess.py
+│   ├── run_dyna1_precompute.slurm
+│   ├── run_preprocess.slurm
+│   ├── run_train.slurm
+│   ├── run_train_warmstart.slurm
+│   ├── run_evaluate.slurm
+│   ├── run_evaluate_warm.slurm
+│   ├── run_occupancy_screen.slurm
+│   ├── run_rmsd_full18.slurm
+│   ├── run_rmsd_screen.slurm
+│   ├── run_rmsd_src_abl.slurm
+│   ├── eval_rmsd_commands.sh
+│   ├── eval_warm_commands.sh
+│   ├── eval_rmsd_1pxo_2fvd.sh
+│   └── target_pids/                      # per-target PDB ID lists (p38a / hsp90a / ca2)
+├── notebooks/
+│   └── dynamics_aware_featuredock_colab.ipynb
+└── docs/
+    ├── index.html                        # project page
+    ├── REPRODUCE.md                      # linear end-to-end reproduction guide
+    ├── HOW_TO_GET_WEIGHTS.md
+    ├── split_and_training_notes.md
+    ├── dyna1_six_point_response.md       # full literature-grounded analysis + next experiments
+    ├── dynamics_scouting_brief.md        # ACO1 / SHMT2 scouting brief
+    ├── dark_biologyrich_brief.md         # NADSYN1 / ALDH1L2 scouting brief
+    └── assets/
+        ├── architecture_dyna1_augmented.svg   # new: Dyna-1 channel added to FeatureDock
+        ├── architecture_baseline.png          # original FeatureDock 5-panel pipeline
+        ├── fig1_threeway_rmsd.png             # baseline vs real Dyna-1 vs scrambled
+        ├── fig2_baseline_vs_dyna1.png         # pose success rate, 6 systems
+        ├── fig3_diffdock_comparison.png       # vs FeatureDock_Dyna1 predicted drug binding
+        ├── dyna1_story_3panel.png             # hypothesis / warm-start gain / ablation
+        ├── expert_vs_solo_search.png
+        ├── pose_overlay_ptp1b.png
+        ├── pose_overlay_hsp90a.png
+        ├── target_impact_landscape.webp
+        └── target_impact_landscape.csv
 ```
 
 ## References
 
 - **FeatureDock** — protein–ligand docking via physicochemical local-environment learning. `doi:10.1038/s44386-025-00005-6`
 - **Dyna-1** — Learning millisecond protein dynamics from what is missing in NMR spectra. `biorxiv 2025.03.19.642801`
-
