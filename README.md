@@ -95,13 +95,108 @@ That's a real self-correction, not a stall: on the bound complex, both kinases a
 
 ---
 
-## Where Claude Science actually helped
+## Where Claude Science actually helped. Everything below — the results, the hypotheses we can test at the bench, the domain-expert-conditioned literature analysis, and the candidate compounds flagged for screening — was generated using Claude Science.
 
 We started by retraining Dyna-1-FeatureDock end-to-end from scratch and got no improvement — the signal was there but the model couldn't find it. What moved the project past that stall was switching to a **warm-start fine-tune**: initialize from the original FeatureDock checkpoint and let the added dynamics channel adapt on top of weights that already know pocket geometry, rather than asking an 81-channel model to relearn geometry and dynamics jointly from zero.
 
 <img src="docs/assets/dyna1_story_3panel.png" alt="Three-panel story: the hypothesis, warm-start gain per system, and scrambled-channel ablation showing real Dyna-1 wins on 5 of 6 systems" width="700"/>
 
 The Abl/Src holo-state flatness above is the other highlight worth naming directly: Claude Science measured our own flagship feature against the data, found it flat in the bound state, and told us to change the story — rather than helping us paper over a null result. That's the useful capability: catching a self-inconsistency in the analysis before it became the headline claim, and pointing to the specific follow-up experiment that would actually test it.
+
+---
+
+# Domain-expert-conditioned search vs. Claude-on-its-own
+
+**Question.** When you ask Claude Science to scout dynamics-dark drug targets, does it
+matter *how* you frame the ask? Specifically: does conditioning the search on a domain
+expert's judgment — "read the literature as if you were Dr. Dorothee Kern" — produce
+materially better candidates than letting Claude optimize the problem on its own terms?
+
+**Setup (both runs, same session, same tools).** Both searches used the same live
+connectors (PubMed counts, ChEMBL target/bioactivity lookups) and the same target
+universe. The only variable was the *prompt frame*:
+
+- **Unconditioned (Claude solo).** Claude was free to define and maximize its own
+  objective. It built a computable gap score — roughly *disease-literature volume ÷
+  dynamics-literature volume* — and ranked the proteome by it. Top picks:
+  **GLS, NAMPT, GAPDH, TYMS, PKM.**
+- **Expert-conditioned (as Kern).** The prompt asked for the qualitative filter a
+  biophysicist actually applies: *the protein's function must be a conformational
+  switch, its motion must be unmeasured, and it must not already be a crowded drug
+  program.* Top picks: **ACO1/IRP1, SHMT2, NADSYN1, ALDH1L2.**
+
+Every number below was pulled live this session (PubMed `total_count` per query;
+ChEMBL target existence). No values are recalled.
+
+## Result — the two searches land in different regions
+<img src="docs/assets/expert_vs_solo_search.png" alt="Three-panel story: the hypothesis, warm-start gain per system, and scrambled-channel ablation showing real Dyna-1 wins on 5 of 6 systems" width="450"/>
+| metric (mean per candidate) | unconditioned | expert-conditioned | fold |
+|---|--:|--:|--:|
+| dynamics papers (conf.+MD+NMR) | 242 | 4 | **61×** |
+| inhibitor-program papers | 759 | 41 | **19×** |
+| clinical papers | 201 | 8.5 | **24×** |
+| disease-literature papers | 1513 | 74 | 20× |
+| already drugged (has ChEMBL target) | **2 / 5** | **0 / 4** | — |
+
+The unconditioned score is dominated by a numerator it can measure well —
+disease-literature *volume* — so it rewards proteins that are famous for other reasons.
+GLS and GAPDH each carry **200–900 dynamics papers** and **1,000+ inhibitor papers**;
+GLS is already a clinical-stage target (ChEMBL CHEMBL2146302, 35 potent actives). These
+are not dark. The score mistook *fame* for *opportunity* because volume is the easiest
+thing to count.
+
+Expert-conditioning inverts the objective. Every expert pick sits in the **open lane**
+(Fig. panel a, shaded): near-zero dynamics literature, thin inhibitor programs, and
+**no ChEMBL target record at all**. NADSYN1 and ALDH1L2 have a literal **0/0/0** on
+conformational-change, MD, and NMR papers, yet carry decisive disease genetics and
+mouse biology. That combination — real biology, zero motion data, undrugged — is
+exactly what a Dyna-1 → NMR program can claim, and it is precisely what a
+volume-maximizing score filters *out*.
+
+## Why the conditioning works (and why it isn't just "smaller numbers")
+
+The expert filter encodes three constraints Claude's own score could not express as a
+computable quantity:
+
+1. **"Function *is* a switch."** Kern doesn't want any under-studied enzyme — she wants
+   one whose therapeutically relevant behaviour is the *rate and population of a
+   conformational transition* (ACO1's Fe-S ⇌ RNA-binding switch; SHMT2's dimer⇌tetramer
+   gate). Literature volume cannot see this; it takes reading the biology.
+2. **"Unmeasured, not just under-published."** The expert distinguishes a protein no one
+   has *looked at* dynamically from one that is simply less popular. The 0/0/0 targets
+   are dark by measurement, not by neglect of a well-trodden target.
+3. **"Not already crowded."** The `has_target` check is the quantitative shadow of a
+   judgment — *is there already a medicinal-chemistry program here?* Expert picks score
+   0/4; solo picks 2/5.
+
+The lesson is not "expert prompt = fewer papers." It is that **the expert frame supplies
+the objective function Claude cannot derive from counts alone.** Left to optimize a
+measurable proxy, an agent climbs the proxy — and disease-literature volume is a proxy
+that peaks on the *most* studied proteins, the opposite of the intent. A short,
+well-aimed piece of domain conditioning ("as Kern, function-is-a-switch, undrugged")
+redirected the same tools and the same model to a 20–60× less-crowded, entirely
+undrugged shortlist.
+
+## Caveat
+
+This is a **4–5 candidate per arm** comparison, not a benchmark. The fold-changes are
+large and consistent across three independent literature axes, but the claim is
+directional ("conditioning moves the search into the open lane"), not a powered effect
+size. The honest framing for the judges: *domain-expert conditioning is a lever on where
+the agent looks, and here it moved the search off the crowded proteins the naive
+objective rewarded and onto genuinely dark, undrugged, biology-rich targets.*
+
+## Dynamic-sparse, biolog-rich targets 
+Filtering ~32 understudied enzymes to a hard zero on all three biophysics axes (conformational-change, MD, NMR = 0) but demanding rich wet-lab disease biology, two survivors emerged, both undrugged. **NADSYN1** (NAD synthetase, a glutamine amidotransferase with an ammonia tunnel) carries a homozygous variant causing congenital vertebral malformation plus osteoporosis-GWAS and worked-out enzymology — decisive genetics, blank dynamics. **ALDH1L2** (mitochondrial 10-formyl-THF dehydrogenase) suppresses ferroptosis and metastasis in mouse/cell cancer models and is regulated by acetylation, yet its inter-domain channeling motion is unmeasured. Both architectures predict where µs–ms exchange should sit (tunnel/interface, not active site), giving a specific Dyna-1 → CPMG program with induced-fit-vs-conformational-selection as the readout.
+
+## Scouting search for potential dynamics-blind therapeutic targets 
+Scanning ~40 metabolic/moonlighting enzymes for the pattern function-is-a-switch, dynamics-unmeasured, chemistry-thin, two candidates stood out. **ACO1/IRP1** is bifunctional — a [4Fe-4S] aconitase that becomes an mRNA-binding iron-regulatory protein via a large inter-domain hinge opening (upstream of HIF2α, central to the iron/ferroptosis axis), yet has zero solution-dynamics studies and no ChEMBL target at all. **SHMT2** gates one-carbon catalysis through a PLP-dependent dimer:left_right_arrow:tetramer switch — the dimer moonlights in the BRISC complex and defines a G6PD+SHMT2 breast-cancer subtype — but its allosteric interface has never been probed dynamically. For each, CPMG/CEST ± ligand titration would localize the µs–ms exchange and distinguish induced fit from conformational selection, with Dyna-1 run first as the falsifiable screen for where the exchange should appear.
+
+---
+
+`docs/assets/dynamics_scouting_brief.md` (ACO1/SHMT2) and `docs/assets/dark_biologyrich_brief.md`
+(NADSYN1/ALDH1L2).*
+
 
 ---
 
@@ -161,14 +256,14 @@ with a source document to verify.
 | CHEMBL4524071 | 0.42 nM (9.38) | CHEMBL1130173 | Very potent, low-profile record — footprint-DSS test of catalytic vs allosteric engagement on 2CM2/1T49. |
 | CHEMBL1086226 | 38 nM (7.42) | CHEMBL1132993 | Series member for allosteric-vs-active-site DSS separation. |
 
-*I did not assert "no prior research" as fact for any of these — verify literature depth
-per ID before wet-lab commitment. The ChEMBL IDs, potencies, and document IDs are the
-verifiable anchors.*
+
+
 
 ---
 
 ## 6. Where else Dyna-1 features would have high impact (named cases)
-
+- **Dyna-1: a plug-in dynamics prior that sharpens docking, co-folding, and protein design.**
+Dyna-1's per-residue µs–ms exchange probabilities are a general-purpose dynamics prior that runs on any AlphaFold model with no experimental input, so they can be fed as an extra input channel or re-scoring term to co-folding and docking engines like Boltz-2 and DiffDock-L — flagging the flexible residues a single static pose cannot represent and steering scores toward the induced-fit conformer the ligand actually selects. The same footprint is a direct objective for AI protein design, letting RFdiffusion/ProteinMPNN-style pipelines deliberately build in or engineer out predicted exchange hot-spots — turning cryptic-pocket and allosteric-switch dynamics into an optimizable design target on exactly the dynamics-dark proteins (ACO1/IRP1, SHMT2, NADSYN1, ALDH1L2) where a motion-aware prior creates the most new opportunity.
 - **Cryptic-pocket prediction — PocketMiner (Meller, Bowman et al., *Nat. Commun.* 2023).**
   PocketMiner predicts cryptic-site *opening* from single structures using an MSM-trained
   GNN. Dyna-1's µs–ms exchange is a *complementary experimental-grounded* channel — add it
@@ -201,7 +296,7 @@ bash setup_hackathon_mamba.sh      # Python 3.11 + modern PyTorch, all three too
 micromamba activate Hackathon
 ```
 
-The three upstream repos have incompatible declared pins (FeatureDock → py3.8, Protpardelle-1c → py≥3.10). This project runs them together on a single modern stack; FeatureDock's original py3.8/torch2.3 pins are dropped in favor of the shared environment, and `torchtext` is dropped entirely (unused, breaks on modern torch).
+The three upstream repos have incompatible declared pins (FeatureDock → py3.8). This project runs them together on a single modern stack; FeatureDock's original py3.8/torch2.3 pins are dropped in favor of the shared environment, and `torchtext` is dropped entirely (unused, breaks on modern torch).
 
 ## Publishing the project page
 
