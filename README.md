@@ -54,11 +54,7 @@ from each pocket; the structure/cluster is the sampling unit for class balancing
 To this base set, I add:
 - **Dyna-1** per-residue µs–ms motion predictions, computed over every structure
   and mapped onto the grid-point shells
-- **ChEMBL** bioassay libraries (CDK2 = `CHEMBL301`, ACE = `CHEMBL1808`) with IC₅₀
-  values, for potency validation
-- **Protpardelle-1c** partial-diffusion ensembles of each query pocket (used for
-  augmentation 2)
-
+- **ChEMBL** bioassay libraries
 | | |
 |---|---|
 | **Access** | Free with registration (non-redistributable); ChEMBL/Protpardelle-1c outputs open |
