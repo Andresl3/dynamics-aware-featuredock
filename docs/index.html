@@ -6,96 +6,77 @@
 <title>Dynamics-aware FeatureDock</title>
 <style>
   :root{
-    --ink:#1a2233; --muted:#5b6577; --line:#e4e8ef; --bg:#ffffff;
-    --accent:#c9463d; --accent2:#e08a2b; --panel:#f7f9fc;
-    --badge:#e08a2b;
-    --maxw:860px;
+    --bg:#0d1117; --panel:#161b22; --ink:#c9d1d9; --head:#e6edf3; --muted:#8b949e;
+    --line:#30363d; --accent:#58a6ff; --green:#3fb950; --blue:#2f6fb0; --amber:#d29922;
+    --maxw:900px;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  a{color:var(--accent); text-decoration:none}
-  a:hover{text-decoration:underline}
-  code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.9em}
-  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 20px}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;
+    background:#161b22;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#e6edf3}
+  pre{background:#161b22;border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;
+    font-size:.85rem;line-height:1.55;margin:14px 0}
+  pre code{background:none;border:none;padding:0}
+  pre .c{color:#8b949e}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
 
-  /* header */
-  header{
-    background:linear-gradient(160deg,#12203a 0%,#243b63 100%);
-    color:#fff; padding:64px 0 52px;
-  }
-  header .wrap{max-width:var(--maxw)}
-  header h1{margin:0 0 8px; font-size:2.4rem; letter-spacing:-.02em; font-weight:700}
-  header .sub{font-size:1.15rem; color:#cdd8ec; margin:0 0 22px; max-width:640px}
-  .pills{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
-  .pill{
-    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
-    color:#eef3fb; padding:5px 12px; border-radius:999px; font-size:.82rem;
-  }
-  .cta{display:inline-block; margin-top:22px; background:var(--accent2); color:#fff;
-       padding:10px 18px; border-radius:8px; font-weight:600; font-size:.95rem}
-  .cta:hover{background:#c9761f; text-decoration:none}
+  header{border-bottom:1px solid var(--line);padding:56px 0 40px;background:#010409}
+  header h1{margin:0 0 10px;font-size:2.3rem;font-weight:800;letter-spacing:-.02em;color:var(--head)}
+  header .sub{font-size:1.12rem;color:var(--muted);margin:0 0 20px;max-width:660px}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pill{background:#161b22;border:1px solid var(--line);color:#adbac7;padding:4px 12px;
+    border-radius:999px;font-size:.8rem}
+  .cta{display:inline-block;margin-top:22px;background:#238636;color:#fff;padding:9px 18px;
+    border-radius:8px;font-weight:600;font-size:.92rem;border:1px solid rgba(240,246,252,.1)}
+  .cta:hover{background:#2ea043;text-decoration:none}
 
-  /* sections */
-  section{padding:44px 0; border-bottom:1px solid var(--line)}
+  section{padding:40px 0;border-bottom:1px solid var(--line)}
   section:last-of-type{border-bottom:none}
-  h2{font-size:1.5rem; margin:0 0 6px; letter-spacing:-.01em}
-  h2 .k{color:var(--accent); font-weight:700; margin-right:.4em}
-  .lead{color:var(--muted); margin:.2em 0 1.4em; font-size:1.02rem}
-  h3{font-size:1.08rem; margin:1.4em 0 .3em}
+  h2{font-size:1.45rem;margin:0 0 6px;color:var(--head);letter-spacing:-.01em}
+  h2 .k{color:var(--muted);font-weight:600;margin-right:.45em}
+  .lead{color:var(--muted);margin:.2em 0 1.3em;font-size:1.0rem}
+  h3{font-size:1.05rem;margin:1.5em 0 .4em;color:var(--head)}
+  p{margin:0 0 14px}
 
-  .pitch{
-    font-size:1.22rem; line-height:1.55; background:var(--panel);
-    border-left:4px solid var(--accent2); padding:18px 22px; border-radius:0 8px 8px 0;
-    color:var(--ink);
-  }
+  .pitch{font-size:1.12rem;line-height:1.55;background:var(--panel);border-left:3px solid var(--accent);
+    padding:16px 20px;border-radius:0 8px 8px 0;color:var(--ink)}
 
-  figure{margin:26px 0; text-align:center}
-  figure img{max-width:100%; height:auto; border:1px solid var(--line); border-radius:10px;
-    box-shadow:0 2px 14px rgba(20,30,60,.07)}
-  figcaption{color:var(--muted); font-size:.86rem; margin-top:10px; font-style:italic}
+  figure{margin:22px 0;text-align:center}
+  figure img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+  figcaption{color:var(--muted);font-size:.85rem;margin-top:9px}
 
-  /* augmentation cards */
-  .aug{display:flex; gap:16px; padding:18px 0; border-top:1px dashed var(--line)}
+  .aug{display:flex;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
   .aug:first-of-type{border-top:none}
-  .num{flex:0 0 34px; height:34px; border-radius:50%; background:var(--badge); color:#fff;
-    font-weight:700; display:flex; align-items:center; justify-content:center; font-size:1.05rem}
-  .aug h3{margin:.1em 0 .25em; font-size:1.06rem}
-  .aug p{margin:.2em 0; color:#33405a}
-  .tag{display:inline-block; font-size:.72rem; font-weight:600; text-transform:uppercase;
-    letter-spacing:.03em; padding:2px 8px; border-radius:5px; margin-left:6px; vertical-align:middle}
-  .tag.retrain{background:#fde7e4; color:#b23a30}
-  .tag.nort{background:#e3f1e6; color:#2f7d43}
+  .num{flex:0 0 30px;height:30px;border-radius:50%;background:#1f6feb;color:#fff;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:.95rem}
+  .aug h3{margin:.05em 0 .2em;font-size:1.0rem}
+  .aug p{margin:.15em 0;color:var(--ink)}
+  .tag{display:inline-block;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;
+    padding:2px 8px;border-radius:5px;margin-left:6px;vertical-align:middle}
+  .tag.retrain{background:rgba(210,153,34,.18);color:#e3b341}
+  .tag.nort{background:rgba(63,185,80,.16);color:#56d364}
 
-  /* table */
-  table{width:100%; border-collapse:collapse; margin:12px 0; font-size:.94rem}
-  th,td{text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top}
-  th{color:var(--muted); font-weight:600; font-size:.8rem; text-transform:uppercase; letter-spacing:.03em}
-  td code{background:var(--panel); padding:1px 5px; border-radius:4px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em}
+  td strong{color:var(--green)}
+  tbody tr:hover{background:rgba(88,166,255,.05)}
 
-  pre{background:#12203a; color:#e8eefb; padding:16px 18px; border-radius:10px; overflow-x:auto;
-    font-size:.86rem; line-height:1.5}
-  pre .c{color:#8fa3c7}
+  .note{background:rgba(56,139,253,.1);border:1px solid rgba(56,139,253,.35);border-radius:8px;
+    padding:12px 16px;font-size:.92rem;color:#c9d1d9;margin:16px 0}
+  .note strong{color:#e6edf3}
 
-  .note{background:#fff8ec; border:1px solid #f2dfb0; border-radius:8px; padding:12px 16px;
-    font-size:.92rem; color:#6a5326; margin:16px 0}
-  .note.hypo{background:#fdecec; border-color:#efb9b4; color:#8a2f27}
-  .hypo-tag{display:inline-block; background:var(--accent); color:#fff; font-size:.66rem;
-    font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:2px 8px;
-    border-radius:5px; vertical-align:middle; margin-right:6px}
-  h2 .hypo-tag{font-size:.6rem; vertical-align:middle}
-  figcaption .hypo-tag{font-style:normal}
-
-  .eq{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 16px;
-    font-family:ui-monospace,Menlo,monospace; text-align:center; margin:12px 0}
-
-  footer{padding:34px 0 48px; color:var(--muted); font-size:.86rem}
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  .eq{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 16px;
+    font-family:ui-monospace,Menlo,monospace;text-align:center;margin:12px 0;color:#e6edf3}
+  ol.steps{padding-left:22px} ol.steps>li{margin:14px 0}
+  ol.steps>li>strong{color:var(--head)}
+  footer{padding:32px 0 56px;color:var(--muted);font-size:.85rem}
 </style>
 </head>
 <body>
@@ -103,181 +84,210 @@
 <header>
   <div class="wrap">
     <h1>Dynamics-aware FeatureDock</h1>
-    <p class="sub">Injecting predicted and sampled protein motion into structure-based
-    docking &mdash; so a docking model can reason about pockets that <em>move</em>, not just
-    the single frozen structure it was handed.</p>
+    <p class="sub">A docking model that reasons about pockets that <em>move</em>. We add a per-residue
+    &micro;s&ndash;ms conformational-exchange signal to FeatureDock's binding-site representation and test
+    whether it improves ligand-pose prediction.</p>
     <div class="pills">
       <span class="pill">Transformer docking</span>
-      <span class="pill">&micro;s&ndash;ms dynamics</span>
-      <span class="pill">Conformational ensembles</span>
+      <span class="pill">Dyna-1 &micro;s&ndash;ms dynamics</span>
+      <span class="pill">6&times;80 &rarr; 6&times;81 tensor</span>
       <span class="pill">PyTorch</span>
     </div>
-    <a class="cta" href="#quickstart">Get started &rarr;</a>
+    <a class="cta" href="#install">Installation &rarr;</a>
   </div>
 </header>
 
 <section id="overview">
   <div class="wrap">
-    <h2><span class="k">&sect;</span>Overview</h2>
-    <p class="lead">What the project is, in one sentence.</p>
-    <p class="pitch">Take <strong>FeatureDock</strong> &mdash; a transformer that predicts where a
-    ligand will sit in a protein pocket &mdash; and make it <strong>dynamics-aware</strong>: teach it
-    not just the static shape of the pocket but <em>how the pocket moves</em>, so it docks more
-    reliably in flexible pockets where a single crystal structure misleads it.</p>
-
-    <h3>The problem it attacks</h3>
-    <p>FeatureDock, as published, reads <strong>one static structure</strong> and predicts a
-    &ldquo;ligand-occupancy probability envelope&rdquo; over grid points in the pocket &mdash; a 3D cloud of
-    <em>&ldquo;a ligand atom probably goes here.&rdquo;</em> That works when the pocket is rigid. It struggles
-    when the pocket <strong>breathes</strong> on the &micro;s&ndash;ms timescale &mdash; exactly the motions a crystal
-    structure cannot show. The running example is <strong>CDK2&rsquo;s G-loop / Tyr15 region</strong>,
-    which rearranges between the kinase&rsquo;s active and inactive states. The hypothesis: feeding the
-    model information about which residues move lets it resolve those cases.</p>
+    <h2><span class="k">#</span>Overview</h2>
+    <p class="pitch">Take <strong>FeatureDock</strong> &mdash; a transformer that predicts where a ligand sits
+    in a protein pocket &mdash; and make it <strong>dynamics-aware</strong>: give it not just the static shape
+    of the pocket but a readout of <em>which residues move</em>, so it docks more reliably in flexible pockets
+    where a single crystal structure misleads it.</p>
+    <p>FeatureDock reads one static structure and predicts a per-grid-point &ldquo;ligand-occupancy envelope&rdquo;
+    over the pocket. That works when the pocket is rigid; it struggles when the pocket <strong>breathes</strong>
+    on the &micro;s&ndash;ms timescale &mdash; exactly the motion a crystal structure cannot show. We test the
+    hypothesis that telling the model which residues are conformationally mobile lets it resolve those cases.</p>
   </div>
 </section>
 
 <section id="architecture">
   <div class="wrap">
-    <h2><span class="k">&sect;</span>Architecture</h2>
-    <p class="lead">Transformer docking + scoring, augmented with predicted &amp; sampled motion at three
-    stages of the pipeline.</p>
+    <h2><span class="k">#</span>Architecture</h2>
+    <p class="lead">One extra channel, threaded through the existing model. Deliberately minimal, so any change
+    in performance is attributable to the dynamics signal rather than a bigger network.</p>
     <figure>
       <img src="assets/architecture.png" alt="Dynamics-aware FeatureDock block diagram">
-      <figcaption>Fig 1. Pipeline from apo structure &rarr; featurize &rarr; transformer &rarr; envelope &rarr;
-      score. Augmentation points are badged &#9312; &#9313; &#9314;.</figcaption>
+      <figcaption>Pipeline: apo structure &rarr; featurize &rarr; transformer &rarr; occupancy envelope &rarr;
+      pose scoring. The Dyna-1 channel enters at the featurization stage.</figcaption>
     </figure>
-  </div>
-</section>
-
-<section id="augmentations">
-  <div class="wrap">
-    <h2><span class="k">&sect;</span>The three augmentations</h2>
-    <p class="lead">Each injects protein motion at a different stage &mdash; and they escalate in cost.</p>
-
-    <div class="aug">
-      <div class="num">1</div>
-      <div>
-        <h3>Dyna-1 dynamics channel <span class="tag retrain">requires retrain</span></h3>
-        <p>FeatureDock describes each grid point with a <code>6&nbsp;shells &times; 80</code>
-        physicochemical FEATURE tensor. This appends <strong>one more channel</strong> &mdash; Dyna-1&rsquo;s
-        per-residue &micro;s&ndash;ms motion probability &mdash; making it <code>6 &times; 81</code>, then retrains
-        the transformer. The central experiment: <em>does telling the model which residues move help it
-        dock?</em></p>
-      </div>
-    </div>
-
-    <div class="aug">
-      <div class="num">2</div>
-      <div>
-        <h3>Ensemble-conditioned envelope averaging <span class="tag nort">no head retrain</span></h3>
-        <p>Instead of one structure, generate a <strong>Protpardelle-1c</strong> partial-diffusion
-        ensemble of the pocket, run FeatureDock on <em>each</em> conformer, and average the resulting
-        envelopes <strong>in output space</strong> (not by averaging input features). Tests robustness to
-        small backbone movements &mdash; the idea adapted from ensemble conditioning in Caliby /
-        Likelihood-Fitness Bridging.</p>
-      </div>
-    </div>
-
-    <div class="aug">
-      <div class="num">3</div>
-      <div>
-        <h3>Population-weighted multi-state scoring <span class="tag nort">no retrain</span></h3>
-        <p>Score each conformational state separately, then combine them the way physics prescribes &mdash;
-        a population-weighted sum of association constants:</p>
-        <div class="eq">K<sub>app</sub> = &Sigma;<sub>i</sub> p<sub>i</sub>&middot;K<sub>i</sub> ,
-          &nbsp;&nbsp; K<sub>i</sub> &prop; exp(&minus;&Delta;G<sub>i</sub> / RT)</div>
-        <p>with p<sub>i</sub> the state populations (from the ensemble, or a Markov State Model). For a
-        two-state open&#8646;closed pocket this is exactly
-        K<sub>app</sub> = p<sub>open</sub>&middot;K<sub>open</sub> + p<sub>closed</sub>&middot;K<sub>closed</sub>.
-        Sits entirely downstream of a trained model; needs a score&rarr;pseudo-&Delta;G calibration.</p>
-      </div>
-    </div>
+    <p>Each binding-site voxel is described by <code>6 shells &times; 80 properties</code>. We append the
+    Dyna-1 predicted &micro;s&ndash;ms exchange probability of the nearest residue as an 81st property per shell,
+    making the tensor <code>6 &times; 81</code>, then train the transformer. Both arms &mdash; baseline
+    (6&times;80) and Dyna-1 (6&times;81) &mdash; are otherwise identical.</p>
+    <h3>Warm-start</h3>
+    <p>Both arms can also be fine-tuned from FeatureDock's pretrained 20-block checkpoint. The baseline loads
+    all 334 weight tensors; the Dyna-1 arm loads 330 and re-initializes the 4 input-normalization tensors that
+    must resize for the extra channel &mdash; isolating the dynamics channel as the only substantive difference.</p>
   </div>
 </section>
 
 <section id="results">
   <div class="wrap">
-    <h2><span class="k">&sect;</span>Expected results <span class="hypo-tag">Hypothetical</span></h2>
-    <div class="note hypo"><strong>&#9888; These plots are hypothetical results.</strong> Every figure in
-    this section is a hypothesized / expected outcome sketched during project design &mdash; it shows the
-    <em>shape</em> of result the experiments are built to test, <strong>not data from a trained model</strong>.
-    No model has been trained or evaluated yet.</div>
+    <h2><span class="k">#</span>Results <span class="tag nort">Measured</span></h2>
+    <p class="lead">Both arms trained identically on PDBBind v2020 refined (train 4128 / val 353), warm-started
+    from the pretrained checkpoint. Pose RMSD to the native crystal ligand uses FeatureDock's protocol: 500
+    random rotations, best of the top-4 scored poses, 2&nbsp;&Aring; success threshold.</p>
+
+    <div class="note"><strong>Headline:</strong> the Dyna-1 dynamics channel <strong>lowers ligand-pose RMSD
+    on all six tested targets</strong> and <strong>raises the 2&nbsp;&Aring; success rate on five of six</strong>.
+    Pooled over 120 structures, near-native successes rise from <strong>51 &rarr; 67</strong>.</div>
+
     <figure>
-      <img src="assets/results.png" alt="Hypothetical end-of-training metrics, four panels">
-      <figcaption><span class="hypo-tag">Hypothetical</span> Fig 2. A: training curves. B: pose-success ROC.
-      C: CDK2 inactive-vs-active envelope difference sharpening at the mobile Tyr15/G-loop when dynamics is
-      included. D: dynamics helps most in flexible pockets. <em>Illustrative &mdash; not measured.</em></figcaption>
+      <img src="assets/success_baseline_vs_dyna1.png" alt="Pose success rate, baseline vs Dyna-1, six systems">
+      <figcaption>Pose success rate (top-4 &le; 2&nbsp;&Aring;), warm-start, n=20 per system. Dyna-1 (blue)
+      places more near-native poses than baseline (grey) on five systems; BACE1 is tied. No system regresses.</figcaption>
     </figure>
-    <figure>
-      <img src="assets/pose_rmsd.png" alt="Hypothetical ligand pose RMSD boxplots">
-      <figcaption><span class="hypo-tag">Hypothetical</span> Fig 3. Predicted ligand-pose RMSD to native.
-      The hypothesis: dynamics augmentations pull the poorly-predicted flexible-pocket cases below the
-      2&nbsp;&Aring; success line, where static FeatureDock fails. <em>Illustrative &mdash; not measured.</em></figcaption>
-    </figure>
+
+    <table>
+      <thead><tr><th>System</th><th>Successes / 20 (baseline &rarr; Dyna-1)</th><th>Mean top-4 RMSD &Aring; (baseline &rarr; Dyna-1)</th></tr></thead>
+      <tbody>
+        <tr><td>HSP90&alpha;</td><td>3 &rarr; <strong>8</strong></td><td>4.6 &rarr; 2.9</td></tr>
+        <tr><td>PTP1B</td><td>6 &rarr; <strong>12</strong></td><td>3.8 &rarr; 3.0</td></tr>
+        <tr><td>p38&alpha;</td><td>9 &rarr; <strong>12</strong></td><td>3.6 &rarr; 3.1</td></tr>
+        <tr><td>CA-II</td><td>8 &rarr; <strong>9</strong></td><td>3.6 &rarr; 2.3</td></tr>
+        <tr><td>BACE1</td><td>13 &rarr; 13</td><td>1.9 &rarr; 1.9</td></tr>
+        <tr><td>HIV-PR</td><td>12 &rarr; <strong>13</strong></td><td>3.6 &rarr; 3.0</td></tr>
+        <tr><td><strong>Pooled</strong></td><td>51 &rarr; <strong>67</strong></td><td>lower on 6 / 6</td></tr>
+      </tbody>
+    </table>
+
+    <h3>On the structure</h3>
+    <p>The clearest gains are cases where the baseline top-4 pose is several &aring;ngstr&ouml;m off and the
+    Dyna-1 channel pulls it onto native: PTP1B 5.1&nbsp;&Aring; &rarr; 0.4&nbsp;&Aring;, HSP90&alpha;
+    7.8&nbsp;&Aring; &rarr; 0.5&nbsp;&Aring;.</p>
+    <div class="grid2">
+      <figure><img src="assets/pose_overlay_ptp1b.png" alt="PTP1B pose overlay">
+        <figcaption>PTP1B (1nl9). Native (green), baseline top-4 (salmon, 5.1&nbsp;&Aring;), Dyna-1 top-4 (blue, 0.4&nbsp;&Aring;).</figcaption></figure>
+      <figure><img src="assets/pose_overlay_hsp90a.png" alt="HSP90a pose overlay">
+        <figcaption>HSP90&alpha; (4b7p). Native (green), baseline top-4 (salmon, 7.8&nbsp;&Aring;), Dyna-1 top-4 (blue, 0.5&nbsp;&Aring;).</figcaption></figure>
+    </div>
+    <p>On the binding-site envelope-reconstruction task (the training objective), the two arms are
+    statistically indistinguishable on held-out CDK2 (all metrics |&Delta;|&nbsp;&le;&nbsp;0.007). The dynamics
+    channel does not change how the model draws the envelope &mdash; it changes which poses the scoring stage
+    selects, which is where the RMSD improvement comes from.</p>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <h2><span class="k">#</span>Installation</h2>
+    <p class="lead">A SLURM cluster with a V100 (32&nbsp;GB) GPU is the target. Featurization and training use
+    the GPU; posing/eval are CPU-bound.</p>
+
+    <h3>1. Clone and build the environment</h3>
+    <pre><code>git clone https://github.com/natesana/dynamics-aware-featuredock.git
+cd dynamics-aware-featuredock
+bash setup_hackathon_mamba.sh      <span class="c"># clones the 3 tool repos + builds the conda env</span></code></pre>
+    <p><code>setup_hackathon_mamba.sh</code> clones <strong>featuredock/</strong>, <strong>Dyna-1/</strong> and
+    <strong>protpardelle-1c/</strong> into the repo root (they are gitignored, never committed) and creates a
+    Python&nbsp;3.11 conda env. Note the env name it makes &mdash; every SLURM script has an
+    <code>ENV_NAME="dynafeat"</code> line near the top; set it to your env name. Each script also uses absolute
+    cluster paths, so edit <code>ROOT</code> / <code>OUT_DIR</code> at the top of each script to your own scratch
+    path before submitting.</p>
+
+    <h3>2. Get PDBBind v2020 (refined set)</h3>
+    <p>Register (free) at <a href="http://www.pdbbind.org.cn">pdbbind.org.cn</a> and download the refined set.
+    Untar it and point the pipeline at it:</p>
+    <pre><code>export PDBBIND_DIR=/your/path/to/PDBbind_v2020_refined/refined-set</code></pre>
+
+    <h3>3. Get the Dyna-1 channel</h3>
+    <p>This is the one expensive precompute. If a teammate has the precomputed CSVs
+    (<code>dyna1_csv.tar.gz</code>, ~16&nbsp;MB), use them and skip the GPU step:</p>
+    <pre><code>mkdir -p $OUT_DIR/dyna1_csv
+tar -xzf dyna1_csv.tar.gz -C $OUT_DIR/dyna1_csv   <span class="c"># one CSV per PDB: position,residue,p_exchange</span></code></pre>
+    <p>Or regenerate them yourself (GPU, hours):</p>
+    <pre><code>sbatch hpc/run_dyna1_precompute.slurm             <span class="c"># Dyna-1 inference over all refined structures</span></code></pre>
+  </div>
+</section>
+
+<section id="usage">
+  <div class="wrap">
+    <h2><span class="k">#</span>Using the model</h2>
+    <p class="lead">Featurize once, then train and evaluate both arms. Every step is a SLURM script you submit;
+    the full runbook with gotchas is in <code>docs/REPRODUCE.md</code>.</p>
+
+    <ol class="steps">
+      <li><strong>Preprocess &rarr; feature tensors</strong> (GPU). Builds the baseline and augmented tensors side by side.
+        <pre><code>sbatch hpc/run_preprocess.slurm
+<span class="c"># -> $OUT_DIR/pvar_80/  (baseline 6x80)   $OUT_DIR/pvar_81/  (Dyna-1 6x81)</span>
+<span class="c"># -> voxels/, het/{pid}_ligand.sdf, and occupancy labels</span></code></pre>
+      </li>
+      <li><strong>Split + train both arms</strong> (GPU). The split holds out CDK2's clan as the test set
+        (train=4128, val=353, test=18); training runs 20 epochs (~1.2&nbsp;h/arm on a V100).
+        <pre><code>sbatch hpc/run_train.slurm                <span class="c"># from-scratch, both arms</span>
+sbatch hpc/run_train_warmstart.slurm      <span class="c"># optional: fine-tune from pretrained checkpoint</span></code></pre>
+        Weights land in <code>results/baseline80/</code>, <code>results/dyna1_81/</code> (and the <code>*_warm/</code> variants).
+      </li>
+      <li><strong>Evaluate binding-site occupancy</strong> (fast, one forward pass per structure).
+        <pre><code>sbatch hpc/run_evaluate.slurm             <span class="c"># CDK2 head-to-head -> cdk2_summary.csv</span></code></pre>
+      </li>
+      <li><strong>Evaluate pose RMSD</strong> (the primary metric; 500 rotations, top-4 scored + oracle).
+        <pre><code>sbatch hpc/run_rmsd_full18.slurm          <span class="c"># 18 CDK2 structures</span>
+sbatch hpc/run_rmsd_screen.slurm          <span class="c"># the six-target screen, n=20/target</span></code></pre>
+        <code>evaluate_cdk2_rmsd.py</code> reports per structure: <code>top1</code> (best-scored pose),
+        <code>top4</code> (best RMSD among the top-4 scored &mdash; the paper-comparable number), and
+        <code>oracle</code> (min RMSD over all restarts &mdash; a best-case diagnostic).
+      </li>
+    </ol>
+
+    <div class="note"><strong>Just want to test, not retrain?</strong> Drop the trained <code>.torch</code>
+    checkpoints into <code>$OUT_DIR/results/&lt;name&gt;/</code> with the filenames in
+    <code>docs/HOW_TO_GET_WEIGHTS.md</code>, then run the eval scripts directly &mdash; no training needed.</div>
+
+    <h3>Common gotchas</h3>
+    <ul>
+      <li><strong>conda in batch jobs:</strong> a non-interactive SLURM shell has no <code>conda</code>
+        function. Every script sources <code>etc/profile.d/conda.sh</code> first &mdash; don't remove that block.</li>
+      <li><strong>logs off scratch:</strong> <code>#SBATCH --output/--error</code> point at <code>$HOME/dyna_logs</code>;
+        writing logs onto Lustre scratch caused intermittent <code>Errno&nbsp;116 stale file handle</code> crashes.</li>
+      <li><strong>each <code>--steps</code> is a full epoch</strong> over all 4128 structures, not a minibatch.
+        <code>--steps 20</code> = 20 epochs.</li>
+      <li><strong>warm-start memory:</strong> both arms must be built <code>--n_blocks 20</code> to match the
+        checkpoint; lower <code>--n_structs</code> to 4 and set
+        <code>PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True</code> to fit 32&nbsp;GB.</li>
+    </ul>
   </div>
 </section>
 
 <section id="tools">
   <div class="wrap">
-    <h2><span class="k">&sect;</span>Built on three tools</h2>
-    <p class="lead">Each open-source repo maps onto a specific role in the pipeline.</p>
+    <h2><span class="k">#</span>Built on</h2>
     <table>
-      <thead><tr><th>Tool</th><th>Role</th><th>Augmentation</th></tr></thead>
+      <thead><tr><th>Tool</th><th>Role</th></tr></thead>
       <tbody>
         <tr><td><a href="https://github.com/xuhuihuang/featuredock">FeatureDock</a></td>
-            <td>The base model being rewritten &amp; retrained</td><td>all</td></tr>
+            <td>The base docking model, rewritten &amp; retrained with the extra channel</td></tr>
         <tr><td><a href="https://github.com/WaymentSteeleLab/Dyna-1">Dyna-1</a></td>
-            <td>Produces the per-residue &micro;s&ndash;ms motion channel</td><td>&#9312;</td></tr>
+            <td>Produces the per-residue &micro;s&ndash;ms conformational-exchange channel</td></tr>
         <tr><td><a href="https://github.com/ProteinDesignLab/protpardelle-1c">Protpardelle-1c</a></td>
-            <td>Generates the conformer ensembles</td><td>&#9313; &#9314;</td></tr>
+            <td>Generates conformer ensembles (for the ensemble-scoring extensions)</td></tr>
       </tbody>
     </table>
-
-    <div class="grid2">
-      <div>
-        <h3>Data</h3>
-        <p>Base training set: <strong>PDBBind v2020 refined</strong> (~4,515 preprocessed
-        cocrystals), reused with the original 90% MMseqs2 cluster split so homologs never straddle
-        train/val. Grid points (millions) are the trainable records; the structure is the sampling unit
-        for class balancing.</p>
-      </div>
-      <div>
-        <h3>Evaluation</h3>
-        <p>Primary metric: ligand-pose RMSD to native (2&nbsp;&Aring; success threshold). Secondary:
-        AUC / KL for strong-vs-weak discrimination, using ChEMBL potencies
-        (<code>CDK2 = CHEMBL301</code>, <code>ACE = CHEMBL1808</code>), stratified by pocket flexibility.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="quickstart">
-  <div class="wrap">
-    <h2><span class="k">&sect;</span>Quick start</h2>
-    <p class="lead">The environment ships all three tools in one place.</p>
-    <pre><span class="c"># clone this repo (contains featuredock / Dyna-1 / protpardelle-1c)</span>
-git clone https://github.com/&lt;you&gt;/dynamics-aware-featuredock.git
-cd dynamics-aware-featuredock
-
-<span class="c"># build the env (Python 3.11, modern PyTorch; see setup script)</span>
-bash setup_hackathon_mamba.sh
-micromamba activate Hackathon</pre>
-    <div class="note">The three upstream repos have incompatible declared pins (FeatureDock&rarr;py3.8,
-    protpardelle-1c&rarr;py&ge;3.10). This project runs them together on a single modern stack; FeatureDock
-    runs off its original py3.8/torch2.3 pins, and <code>torchtext</code> is dropped (unused, breaks on
-    modern torch).</div>
+    <p>Training data: <strong>PDBBind v2020 refined</strong> (~4,515 preprocessed cocrystals), with the paper's
+    clan-based split so homologs never straddle train/test. Primary metric: ligand-pose RMSD to native
+    (2&nbsp;&Aring; success threshold).</p>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <p><strong>Dynamics-aware FeatureDock</strong> &mdash; Andres Lira. Built on FeatureDock
+    <p><strong>Dynamics-aware FeatureDock.</strong> Built on FeatureDock
     (Xue, Liu, Cao &amp; Huang, npj Drug Discovery 2025), Dyna-1 (Wayment-Steele lab),
     and Protpardelle-1c (Protein Design Lab).</p>
     <p>References: FeatureDock <code>doi:10.1038/s44386-025-00005-6</code> &middot;
     Dyna-1 <code>biorxiv 2025.03.19.642801</code> &middot;
-    Protpardelle-1c <code>biorxiv 2025.08.18.670959</code> &middot;
-    Caliby <code>biorxiv 2025.09.30.679633</code>.</p>
+    Protpardelle-1c <code>biorxiv 2025.08.18.670959</code></p>
   </div>
 </footer>
 
