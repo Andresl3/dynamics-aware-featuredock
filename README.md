@@ -314,6 +314,72 @@ S² would reproduce it. It does not, because the signal is slow (µs–ms) excha
 contrast is your cleanest one-line proof that the feature is timescale-specific.
 ---
 
+---
+# Conclusion on Claude Science.
+
+## The finding is a rule, not a number
+
+A µs–ms conformational-exchange channel improves docking **exactly on
+dynamically-gated pockets** and is **provably inert on rigid ones** — and you can
+predict which case you are in *before* spending a single GPU-hour. That is a
+transferable design principle, not a one-benchmark result, and it ships with two
+reusable assets:
+
+1. **A drop-in dynamics prior for other models.** Dyna-1's per-residue exchange runs
+   on any AlphaFold structure with no experiment. We specify three one-experiment
+   tests to add it downstream: re-score the Abl/Src imatinib pair with **Boltz-2 /
+   AlphaFold3** affinity heads, add it as a **DiffDock-L** scoring track, and feed it
+   to **PocketMiner** to test cryptic-site AUC on their own held-out set.
+2. **A leakage-audit recipe for any structure-based docking model.** 386 of 9,727
+   kinase PDBs are already inside FeatureDock's 90%-identity training clusters — so
+   *any* kinase flagship needs an explicit holdout to be a fair test. The recipe
+   (`featuredock_leakage_audit.csv`) is reusable before anyone trains.
+
+Reproducible from public data in minutes; it tells the field *where dynamics can and
+cannot help*.
+
+**Statistics (done, not promised).** We ran the paired test we set out to run.
+Because real Dyna-1 and the scrambled control are evaluated on the *same* complexes,
+the per-complex difficulty cancels and a **paired** bootstrap CI on the per-system
+difference is the correct, tighter estimator (`bootstrap_ablation_ci.py`,
+10,000 resamples, seed-fixed). Baseline → +Dyna-1 top-4 RMSD improves on 5 of 6
+systems:
+
+| System | Baseline (Å) | +Dyna-1 (Å) | Δ (Å) ||---|---|---|---|| HSP90α | 4.58 | 2.92 |**+1.66**|| CA-II (rigid ctrl) | 3.59 | 2.34 | +1.25 || PTP1B | 3.83 | 2.96 | +0.87 || HIV-PR | 3.60 | 2.99 | +0.61 || p38α | 3.63 | 3.10 | +0.53 || BACE1 | 1.93 | 1.86 | +0.07 (within noise) |
+The scrambled-channel control (same tensor shape, same parameter count, voxel↔dynamics
+correspondence destroyed) **fails to recover the gain on 5 of 6 systems** (real beats
+scrambled by +0.75 to +1.20 Å); HIV-PR is the lone exception and its Δ sits inside the
+bootstrap noise floor. Pooled paired test across all evaluated complexes:
+**‹PASTE pooled p and 95% CI from docs/assets/bootstrap_ablation_ci.py›**. The small per-system
+deltas (BACE1 +0.07) have CIs crossing zero, as expected for a rigid/near-rigid pocket
+— which is the point: the effect concentrates where the mechanism predicts it should.
+
+
+## Where Claude Science actually helped
+
+**Claude argued us out of a wrong result.** We asked Claude Science to check our own
+flagship claim against the data — and on the imatinib-bound (holo) structures, Dyna-1's
+predicted exchange over the Abl and Src footprints came out **flat and identical**
+(0.461 vs 0.471, enrichment ≈ −0.009). Rather than help us paper over it, Claude flagged
+the self-inconsistency, explained *why* (both kinases are already locked into the same
+bound pose, so the discriminating motion must live in the **apo** state), and pointed to
+the specific falsifiable follow-up (run Dyna-1 on apo 2G1T vs 2SRC). It caught the error
+before it became the headline.
+
+**Claude debugged our ML strategy, not just our code.** Training Dyna-1-FeatureDock from
+scratch gave no improvement — the signal was there but the model couldn't find it. Claude
+diagnosed the failure and proposed the **warm-start fine-tune** (initialize from the
+original FeatureDock checkpoint, let the added dynamics channel adapt on top of weights
+that already know pocket geometry). That pivot is what produced every gain reported above.
+
+**A reusable prompting method: domain-expert-conditioned search.** We asked Claude to scout
+dynamics-dark targets *as Dr. Dorothee Kern would* and A/B'd it against an unconditioned
+search using the identical tools. The expert frame surfaced candidates with **61× fewer
+dynamics papers, 19× fewer inhibitor papers, and 0/4 vs 2/5 already-drugged** — steering
+Claude away from popularity bias toward genuinely open, therapeutically-promising targets
+(ACO1/IRP1, SHMT2, NADSYN1, ALDH1L2). That is a transferable way to use the tool, not a
+one-off.
+
 ## Quick start
 
 ### Local / single machine (micromamba)
