@@ -15,6 +15,7 @@ FeatureDock, as published, reads one static structure and predicts a ligand-occu
 We append a per-residue µs–ms dynamics channel — predicted by [Dyna-1](https://www.biorxiv.org/content/10.1101/2025.03.19.642801v1) — to the FEATURE tensor at every grid point: **6×80 → 6×81**.
 
 Retraining on HPC was done with the help and written with Claude Science! 
+
 ---
 
 ## Background: why dynamics, and why not existing dynamics-aware models
