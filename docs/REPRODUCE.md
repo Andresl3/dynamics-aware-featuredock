@@ -30,8 +30,7 @@ cd dynamics-aware-featuredock
 bash setup_hackathon_mamba.sh      # clones the 3 tool repos + builds the conda env
 ```
 
-`setup_hackathon_mamba.sh` clones **featuredock/**, **Dyna-1/**, and
-**protpardelle-1c/** into the repo root (they are gitignored — never committed)
+`setup_hackathon_mamba.sh` clones **featuredock/**, **Dyna-1/**,  into the repo root (they are gitignored — never committed)
 and creates the conda env. Note the env name it makes; every SLURM script has a
 line `ENV_NAME="dynafeat"` near the top — **set that to your env name** (on our
 cluster it is `dynafeat`).

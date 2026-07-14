@@ -14,6 +14,7 @@ FeatureDock, as published, reads one static structure and predicts a ligand-occu
 
 We append a per-residue µs–ms dynamics channel — predicted by [Dyna-1](https://www.biorxiv.org/content/10.1101/2025.03.19.642801v1) — to the FEATURE tensor at every grid point: **6×80 → 6×81**.
 
+Retraining on HPC was done with the help and written with Claude Science! 
 ---
 
 ## Background: why dynamics, and why not existing dynamics-aware models
@@ -43,7 +44,7 @@ The consequence is visible in a concrete, clinically important case — the **Ab
 
 The only architectural change is the added channel: everything downstream of the FEATURE tensor (the transformer, the scoring head, the virtual-screening loop) is untouched. This keeps the ablation clean — any performance delta has to come from the dynamics channel itself, not from added model capacity elsewhere.
 
-## Defining Your Data
+## Defining The Data
 
 My base training set is the **PDBBind v2020 refined set** (~5,316 raw protein-ligand
 cocrystals, ~4,515 after preprocessing), reused with the original 90% MMseqs2
