@@ -2,7 +2,7 @@
 
 **Augmenting FeatureDock with µs–ms protein dynamics for pocket-aware docking.**
 
-Built for the *Built with Claude: Life Sciences* hackathon (July 7–13, 2026) and the "How to Train Your Model" workshop.
+Built for the *Built with Claude: Life Sciences* hackathon (July 7–13, 2026)
 
 ---
 
