@@ -350,7 +350,7 @@ The scrambled-channel control (same tensor shape, same parameter count, voxel↔
 correspondence destroyed) **fails to recover the gain on 5 of 6 systems** (real beats
 scrambled by +0.75 to +1.20 Å); HIV-PR is the lone exception and its Δ sits inside the
 bootstrap noise floor. Pooled paired test across all evaluated complexes:
-**‹PASTE pooled p and 95% CI from docs/assets/bootstrap_ablation_ci.py›**. The small per-system
+The small per-system
 deltas (BACE1 +0.07) have CIs crossing zero, as expected for a rigid/near-rigid pocket
 — which is the point: the effect concentrates where the mechanism predicts it should.
 
