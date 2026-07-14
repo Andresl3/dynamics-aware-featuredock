@@ -58,8 +58,8 @@ To this base set, I add:
 
 | | |
 |---|---|
-| **Access** | Free with registration (non-redistributable); ChEMBL/Protpardelle-1c outputs open |
-| **Format** | Derived tensors (`.pt`) from PDB/mmCIF structures; CSV for bioassay potencies |
+| **Access** | Free with registration (non-redistributable) |
+| **Format** | Derived tensors (`.pt`) from PDB/mmCIF structures |
 | **# records** | ~4,515 structures → millions of labeled grid points |
 | **# fields / variables** | Per grid point: 6 shells × 80 FEATURE properties (6×80), plus 1 Dyna-1 motion channel → 6×81 |
 
