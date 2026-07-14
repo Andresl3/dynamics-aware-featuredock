@@ -1,0 +1,5 @@
+**Dynamics-aware FeatureDock — summary of results and impact**
+
+Adding a single µs–ms dynamics channel (Dyna-1) on top of FeatureDock's static feature vectors measurably improved ligand-pose prediction, and improved it most on dynamic proteins — the gain survived a scrambled-feature ablation on 5 of 6 systems, showing the signal is the dynamics, not added model capacity. Because Dyna-1 predicts per-residue dynamics from sequence alone, this "dynamics ground truth" can be layered onto essentially any protein model, not just docking.
+
+The project also showcases the depth of Claude Science as a research collaborator: it wrote much of the pipeline code, ran the analysis, troubleshot training, and — critically — practiced real scientific judgment. It rejected an over-reaching per-residue claim when the data were too sparse to support it, and it selected drug candidates from protein dynamics and multimodal disease biology. Using domain-expert-conditioned search (reasoning "as Dorothee Kern"), it found dark, undrugged, biology-rich targets, while unconditioned search fell for a popularity bias, returning already-crowded, already-drugged famous proteins.

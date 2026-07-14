@@ -1,0 +1,7 @@
+pdb,role,protein,exact_in_training,cluster_90id,train_members_in_cluster,verdict
+2OIQ,Src·imatinib (flagship Src),chicken c-Src (P00523),True,473,3,IN TRAINING (literal example)
+1IEP,Abl·imatinib (flagship Abl),human ABL1 (P00519),False,726,6,training CLUSTER (6 members seen)
+1OPJ,Abl auto-inhibited (alt-state),human ABL1 (P00519),False,726,6,training cluster
+2G1T,Abl Src-like inactive (alt-state),human ABL1 (P00519),False,726,6,training cluster
+2SRC,c-Src apo (alt-state),human SRC (P12931),False,7443,0,HELD OUT (0 members)
+2H8H,Src·quinazoline (alt-state),human SRC (P12931),False,48400,0,HELD OUT (singleton)
