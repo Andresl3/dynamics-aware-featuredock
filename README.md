@@ -379,31 +379,15 @@ Claude Science to search the literature for proteins with well-characterized
 dynamics, specifically ones where a dynamics-aware model could be meaningfully
 tested against a static one. From there, we asked it to surface real ChEMBL
 compounds against those targets that hadn't already been extensively tested or
-reported on, giving us concrete, previously unexplored candidates to test our
-dynamics-versus-static hypothesis against rather than starting from a blank
-literature search ourselves.
+reported on. These are candidates for further virtual screening with
+Dyna-1-FeatureDock, with the resulting poses forming testable hypotheses for
+bench validation:
 
-Abl-selective candidates (potent on ABL1, not in SRC top set):
+Abl-selective: ABL1 (CHEMBL5416410, CHEMBL536073, CHEMBL436137)
 
-| ChEMBL ID | ABL1 potency | Source doc | Test rationale |
-|---|---|---|---|
-| CHEMBL5416410 | 4.2 nM (pChEMBL 8.38) | CHEMBL1138257 | Newest-registered potent Abl binder in the set — run DSS on apo 2G1T vs 2SRC; predict positive Abl enrichment. |
-| CHEMBL536073 | 12 nM (7.92) | CHEMBL1147914 | Sub-20 nM, absent from Src set — candidate for measured Abl>Src selectivity. |
-| CHEMBL436137 | 20 nM (7.70) | CHEMBL1139689 | Same series family — selectivity SAR test. |
+KRAS-G12C switch-II cryptic pocket: (CHEMBL4452137, CHEMBL4456598)
 
-KRAS-G12C (switch-II cryptic pocket — dynamics-created site):
-
-| ChEMBL ID | Potency | Source doc | Rationale |
-|---|---|---|---|
-| CHEMBL4452137 | 25 nM (7.60) | CHEMBL4354832 | Switch-II pocket only opens transiently; a strong test of whether Dyna-1 flags the cryptic-site residues on apo 4OBE before the covalent warhead engages. |
-| CHEMBL4456598 | 48 nM (7.32) | CHEMBL4325929 | Independent series → cross-series generalization of the cryptic-pocket prediction. |
-
-PTP1B (WPD-loop allosteric):
-
-| ChEMBL ID | Potency | Source doc | Rationale |
-|---|---|---|---|
-| CHEMBL4524071 | 0.42 nM (9.38) | CHEMBL1130173 | Very potent, low-profile record — footprint-DSS test of catalytic vs allosteric engagement on 2CM2/1T49. |
-| CHEMBL1086226 | 38 nM (7.42) | CHEMBL1132993 | Series member for allosteric-vs-active-site DSS separation. |
+PTP1B WPD-loop allosteric: (CHEMBL4524071, CHEMBL1086226)
 
 **A reusable prompting method: domain-expert-conditioned search.** We asked Claude to scout
 dynamics-dark targets *as Dr. Dorothee Kern would* and A/B'd it against an unconditioned
